@@ -57,7 +57,7 @@ namespace TerraNova.Infrastructure.Migrations
                 {
                     id_propriedade = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     nome = table.Column<string>(type: "NVARCHAR2(30)", maxLength: 30, nullable: false),
-                    tamanho_total = table.Column<decimal>(type: "DECIMAL(18, 2)", nullable: false),
+                    tamanho_total = table.Column<decimal>(type: "DECIMAL(18,4)", precision: 18, scale: 4, nullable: false),
                     produtor_id_produtor = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     localizacao_id_localizacao = table.Column<Guid>(type: "RAW(16)", nullable: false)
                 },
@@ -104,7 +104,7 @@ namespace TerraNova.Infrastructure.Migrations
                 {
                     id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     nome_talhao = table.Column<string>(type: "NVARCHAR2(30)", maxLength: 30, nullable: false),
-                    volum_area = table.Column<decimal>(type: "DECIMAL(18, 2)", nullable: false),
+                    volum_area = table.Column<decimal>(type: "DECIMAL(18,4)", precision: 18, scale: 4, nullable: false),
                     tipo_plantacao_id_tipo_plant = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     propriedade_id_propriedade = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     localizacao_id_localizacao = table.Column<Guid>(type: "RAW(16)", nullable: false)

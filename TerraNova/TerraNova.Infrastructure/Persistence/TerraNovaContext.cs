@@ -27,5 +27,17 @@ public class TerraNovaContext(DbContextOptions<TerraNovaContext> options) : DbCo
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TerraNovaContext).Assembly);
+        
+        modelBuilder.Entity<Propriedade>(entity =>
+        {
+            entity.Property(e => e.TamanhoTotal)
+                .HasPrecision(18, 4); // até 99 trilhões com 4 casas decimais
+        });
+
+        modelBuilder.Entity<Talhao>(entity =>
+        {
+            entity.Property(e => e.VolumArea)
+                .HasPrecision(18, 4);
+        });
     }
 }

@@ -204,7 +204,8 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnName("produtor_id_produtor");
 
                     b.Property<decimal>("TamanhoTotal")
-                        .HasColumnType("DECIMAL(18, 2)")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("DECIMAL(18,4)")
                         .HasColumnName("tamanho_total");
 
                     b.HasKey("Id");
@@ -300,7 +301,8 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnName("tipo_plantacao_id_tipo_plant");
 
                     b.Property<decimal>("VolumArea")
-                        .HasColumnType("DECIMAL(18, 2)")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("DECIMAL(18,4)")
                         .HasColumnName("volum_area");
 
                     b.HasKey("Id");
