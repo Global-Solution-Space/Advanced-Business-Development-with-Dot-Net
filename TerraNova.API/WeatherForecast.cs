@@ -1,4 +1,4 @@
-namespace Advanced_Business_Development_with_Dot_Net;
+namespace TerraNova.API; 
 
 public class WeatherForecast
 {

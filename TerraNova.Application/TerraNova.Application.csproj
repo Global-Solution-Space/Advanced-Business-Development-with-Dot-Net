@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\TerraNova.Domain\TerraNova.Domain.csproj" />
+        <ProjectReference Include="..\TerraNova.Integration\TerraNova.Integration.csproj" />
     </ItemGroup>
 
     <ItemGroup>

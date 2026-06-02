@@ -4,6 +4,8 @@ using TerraNova.Application.Services.Implementations;
 using TerraNova.Application.Services.Interfaces;
 using TerraNova.Infrastructure.Persistence;
 using TerraNova.Infrastructure.Persistence.Repositories;
+using TerraNova.Integration.Nasa;
+using TerraNova.Integration.SatVeg;
 
 namespace TerraNova.API.Extensions;
 
@@ -67,6 +69,16 @@ public static class ServiceCollectionExtensions
         // Alertas
         services.AddScoped<IAlertaAgricolaService, AlertaAgricolaService>();
  
+        services.AddHttpClient<NasaPowerClient>(client => 
+        {
+            client.BaseAddress = new Uri("https://power.larc.nasa.gov");
+        });
+
+        services.AddHttpClient<SatVegClient>(client => 
+        {
+            client.BaseAddress = new Uri("https://api.cnptia.embrapa.br");
+        });
+        
         return services;
     }
 }

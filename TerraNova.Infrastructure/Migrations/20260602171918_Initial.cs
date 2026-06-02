@@ -142,7 +142,9 @@ namespace TerraNova.Infrastructure.Migrations
                     latitude = table.Column<decimal>(type: "NUMBER(9,6)", nullable: false),
                     longitude = table.Column<decimal>(type: "NUMBER(10,6)", nullable: false),
                     elevacao = table.Column<decimal>(type: "NUMBER(5,2)", nullable: false),
-                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false)
+                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false),
+                    dados_json = table.Column<string>(type: "CLOB", nullable: false),
+                    data_analise = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -168,7 +170,8 @@ namespace TerraNova.Infrastructure.Migrations
                     poligono = table.Column<string>(type: "CLOB", nullable: false),
                     todas_estatisticas = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     data_analise = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false)
+                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false),
+                    dados_json = table.Column<string>(type: "CLOB", nullable: false)
                 },
                 constraints: table =>
                 {

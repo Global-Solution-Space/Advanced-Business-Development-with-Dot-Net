@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TerraNova.Domain.Entities;
 using TerraNova.Domain.Enums;
 
-namespace TerraNova.Infraestructure.Persistence.Configurations;
+namespace TerraNova.Infrastructure.Persistence.Configurations;
 
 public sealed class AlertaAgricolaConfiguration : IEntityTypeConfiguration<AlertaAgricola>
 {

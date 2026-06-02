@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TerraNova.Domain.Entities;
 
-namespace TerraNova.Infraestructure.Persistence.Configurations;
+namespace TerraNova.Infrastructure.Persistence.Configurations;
 
 public sealed class NasaPowerConfiguration : IEntityTypeConfiguration<NasaPower>
 {
@@ -40,7 +40,16 @@ public sealed class NasaPowerConfiguration : IEntityTypeConfiguration<NasaPower>
         builder.Property(n => n.TalhaoId)
             .HasColumnName("talhao_id_talhao")
             .IsRequired();
- 
+        
         // FK para Talhao configurada no TalhaoConfiguration
+        
+        builder.Property(n => n.DadosJson)
+            .HasColumnName("dados_json")
+            .HasColumnType("CLOB")
+            .IsRequired();
+        
+        builder.Property(n => n.DataAnalise)
+            .HasColumnName("data_analise")
+            .IsRequired();
     }
 }

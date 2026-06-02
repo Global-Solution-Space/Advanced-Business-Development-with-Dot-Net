@@ -1,6 +1,6 @@
-@Advanced_Business_Development_with_Dot_Net_HostAddress = http://localhost:5160
+@TerraNova_HostAddress = http://localhost:5160
 
-GET {{Advanced_Business_Development_with_Dot_Net_HostAddress}}/weatherforecast/
+GET {{TerraNova_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

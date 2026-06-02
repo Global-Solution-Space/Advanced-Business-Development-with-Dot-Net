@@ -99,6 +99,15 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnType("RAW(16)")
                         .HasColumnName("id_nasapower");
 
+                    b.Property<string>("DadosJson")
+                        .IsRequired()
+                        .HasColumnType("CLOB")
+                        .HasColumnName("dados_json");
+
+                    b.Property<DateTime>("DataAnalise")
+                        .HasColumnType("TIMESTAMP(7)")
+                        .HasColumnName("data_analise");
+
                     b.Property<string>("DataFim")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -214,6 +223,11 @@ namespace TerraNova.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("RAW(16)")
                         .HasColumnName("id_satveg");
+
+                    b.Property<string>("DadosJson")
+                        .IsRequired()
+                        .HasColumnType("CLOB")
+                        .HasColumnName("dados_json");
 
                     b.Property<DateTime>("DataAnalise")
                         .HasColumnType("TIMESTAMP(7)")

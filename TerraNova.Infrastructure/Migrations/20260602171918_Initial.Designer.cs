@@ -12,7 +12,7 @@ using TerraNova.Infrastructure.Persistence;
 namespace TerraNova.Infrastructure.Migrations
 {
     [DbContext(typeof(TerraNovaContext))]
-    [Migration("20260602120953_Initial")]
+    [Migration("20260602171918_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -101,6 +101,15 @@ namespace TerraNova.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("RAW(16)")
                         .HasColumnName("id_nasapower");
+
+                    b.Property<string>("DadosJson")
+                        .IsRequired()
+                        .HasColumnType("CLOB")
+                        .HasColumnName("dados_json");
+
+                    b.Property<DateTime>("DataAnalise")
+                        .HasColumnType("TIMESTAMP(7)")
+                        .HasColumnName("data_analise");
 
                     b.Property<string>("DataFim")
                         .IsRequired()
@@ -217,6 +226,11 @@ namespace TerraNova.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("RAW(16)")
                         .HasColumnName("id_satveg");
+
+                    b.Property<string>("DadosJson")
+                        .IsRequired()
+                        .HasColumnType("CLOB")
+                        .HasColumnName("dados_json");
 
                     b.Property<DateTime>("DataAnalise")
                         .HasColumnType("TIMESTAMP(7)")

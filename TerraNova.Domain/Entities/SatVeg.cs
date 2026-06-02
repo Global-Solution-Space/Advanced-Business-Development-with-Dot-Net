@@ -34,9 +34,12 @@ public sealed class Satveg : BaseEntity
  
     public Guid    TalhaoId { get; private set; }
     public Talhao? Talhao   { get; private set; }
- 
     public List<AlertaAgricola> Alertas { get; private set; } = [];
  
+    public string DadosJson { get; private set; } = "{}";
+
+    public void SetDadosJson(string json) => DadosJson = json;
+    
     private Satveg() { }
  
     public Satveg(

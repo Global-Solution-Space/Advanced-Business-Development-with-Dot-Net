@@ -15,7 +15,7 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
     public IReadOnlyList<T> GetAll() =>
         _set.OrderBy(e => e.Id).ToList();
  
-    public T? GetById(Guid id) =>
+    public virtual T? GetById(Guid id) =>
         _set.Find(id);
  
     public T Add(T entity)

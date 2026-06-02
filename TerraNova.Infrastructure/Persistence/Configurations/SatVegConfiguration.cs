@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TerraNova.Domain.Entities;
 
-namespace TerraNova.Infraestructure.Persistence.Configurations;
+namespace TerraNova.Infrastructure.Persistence.Configurations;
 
 public sealed class SatvegConfiguration : IEntityTypeConfiguration<Satveg>
 {
@@ -59,5 +59,10 @@ public sealed class SatvegConfiguration : IEntityTypeConfiguration<Satveg>
             .IsRequired();
  
         // FK para Talhao configurada no TalhaoConfiguration
+        
+        builder.Property(s => s.DadosJson)
+            .HasColumnName("dados_json")
+            .HasColumnType("CLOB")
+            .IsRequired();
     }
 }

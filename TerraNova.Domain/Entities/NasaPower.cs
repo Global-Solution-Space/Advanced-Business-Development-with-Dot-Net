@@ -23,7 +23,12 @@ public sealed class NasaPower : BaseEntity
     public Talhao? Talhao   { get; private set; }
  
     public List<AlertaAgricola> Alertas { get; private set; } = [];
- 
+
+    public string DadosJson { get; private set; } = "{}";
+    public DateTime DataAnalise { get; private set; }
+
+    public void SetDadosJson(string json) => DadosJson = json;
+    public void SetDataAnalise() => DataAnalise = DateTime.UtcNow;
     private NasaPower() { }
  
     public NasaPower(
