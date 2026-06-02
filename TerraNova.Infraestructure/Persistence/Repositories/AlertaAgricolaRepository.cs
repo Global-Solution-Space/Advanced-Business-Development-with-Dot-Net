@@ -1,0 +1,35 @@
+﻿using Microsoft.EntityFrameworkCore;
+using TerraNova.Application.Repositories;
+using TerraNova.Domain.Entities;
+using TerraNova.Domain.Enums;
+
+namespace TerraNova.Infraestructure.Persistence.Repositories;
+
+public sealed class AlertaAgricolaRepository(TerraNovaContext context)
+    : Repository<AlertaAgricola>(context), IAlertaAgricolaRepository
+{
+    public IReadOnlyList<AlertaAgricola> GetBySatvegId(Guid satvegId) =>
+        Context.Alertas.AsNoTracking()
+            .Where(a => a.SatvegId == satvegId)
+            .OrderByDescending(a => a.DataAlerta)
+            .ToList();
+ 
+    public IReadOnlyList<AlertaAgricola> GetByNasaPowerId(Guid nasaPowerId) =>
+        Context.Alertas.AsNoTracking()
+            .Where(a => a.NasaPowerId == nasaPowerId)
+            .OrderByDescending(a => a.DataAlerta)
+            .ToList();
+ 
+    public IReadOnlyList<AlertaAgricola> GetByNivelAlerta(NivelAlerta nivel) =>
+        Context.Alertas.AsNoTracking()
+            .Where(a => a.NivelAlerta == nivel)
+            .OrderByDescending(a => a.DataAlerta)
+            .ToList();
+ 
+    public IReadOnlyList<AlertaAgricola> GetNaoResolvidos() =>
+        Context.Alertas.AsNoTracking()
+            .Where(a => !a.Resolvido)
+            .OrderByDescending(a => a.NivelAlerta)
+            .ThenByDescending(a => a.DataAlerta)
+            .ToList();
+}
