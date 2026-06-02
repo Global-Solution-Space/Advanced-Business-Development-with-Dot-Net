@@ -2,7 +2,7 @@
 using TerraNova.Application.Repositories;
 using TerraNova.Domain.Entities;
 
-namespace TerraNova.Infraestructure.Persistence.Repositories;
+namespace TerraNova.Infrastructure.Persistence.Repositories;
 
 public sealed class SatvegRepository(TerraNovaContext context)
     : Repository<Satveg>(context), ISatvegRepository

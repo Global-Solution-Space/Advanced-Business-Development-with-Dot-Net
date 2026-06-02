@@ -3,7 +3,7 @@ using TerraNova.Application.Repositories;
 using TerraNova.Domain.Common;
 using TerraNova.Domain.Entities;
 
-namespace TerraNova.Infraestructure.Persistence;
+namespace TerraNova.Infrastructure.Persistence;
 
 public class TerraNovaContext(DbContextOptions<TerraNovaContext> options) : DbContext(options)
 {

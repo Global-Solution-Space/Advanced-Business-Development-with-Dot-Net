@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerraNova.Domain", "TerraNo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerraNova.Application", "TerraNova.Application\TerraNova.Application.csproj", "{C6017184-79E7-4D64-ACD1-1C9B5476682C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerraNova.Infraestructure", "TerraNova.Infraestructure\TerraNova.Infraestructure.csproj", "{D8D95C06-D075-48CF-AA3E-461BB9CEA7F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerraNova.Infrastructure", "TerraNova.Infrastructure\TerraNova.Infrastructure.csproj", "{D8D95C06-D075-48CF-AA3E-461BB9CEA7F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -2,7 +2,7 @@
 using TerraNova.Application.DTOs;
 using TerraNova.Application.Services.Interfaces;
 
-namespace Advanced_Business_Development_with_Dot_Net.Controllers;
+namespace TerraNova.API.Controllers;
 
 /// <summary>Tipos de plantação (tabela de domínio). Ex.: Soja, Milho, Café.</summary>
 [Route("api/[controller]")]

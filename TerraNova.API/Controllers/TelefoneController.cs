@@ -2,7 +2,7 @@
 using TerraNova.Application.DTOs;
 using TerraNova.Application.Services.Interfaces;
 
-namespace Advanced_Business_Development_with_Dot_Net.Controllers;
+namespace TerraNova.API.Controllers;
 
 /// <summary>Telefone detalhado (DDD + número) vinculado a um Produtor. Relação 1:1.</summary>
 [Route("api/[controller]")]

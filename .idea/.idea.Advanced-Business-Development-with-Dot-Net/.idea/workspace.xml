@@ -101,11 +101,29 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Gdev3356&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Global-Solution-Space/Advanced-Business-Development-with-Dot-Net.git&quot;,
+    &quot;accountId&quot;: &quot;7e082b5b-1548-431c-98ee-7480d35c8ffd&quot;
+  }
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/LocalizacaoController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/NasaPowerController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/ProdutorController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/PropriedadeController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/SatVegController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/TalhaoController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/TelefoneController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.API/Controllers/TipoPlantacaoController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.API/Exceptions/GlobalExceptionHandler.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.API/Extensions/ServiceCollectionExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/DTOs/AlertaAgricolaRequest.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/DTOs/AlertaAgricolaResponse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/DTOs/LocalizacaoResponse.cs" root0="FORCE_HIGHLIGHTING" />
@@ -129,9 +147,13 @@
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Repositories/IRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Repositories/ISatVegRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Repositories/ITalhaoRepository.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/AlertaAgricolaService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/LocalizacaoService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/NasaPowerService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/ProdutorService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/PropriedadeService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/SatVegService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/TalhaoService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/TelefoneService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Implementations/TipoPlantacaoService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Application/Services/Interfaces/IAlertaAgricolaService.cs" root0="FORCE_HIGHLIGHTING" />
@@ -155,30 +177,24 @@
     <setting file="file://$PROJECT_DIR$/TerraNova.Domain/Entities/TipoPlantacao.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Domain/Enums/NivelAlerta.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TerraNova.Domain/Exceptions/DomainException.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/AlertaAgricolaConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/NasaPowerConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/ProdutorConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/PropriedadeConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/SatVegConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/TalhaoConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/TelefoneConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Configurations/TipoPlantacaoConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Repositories/AlertaAgricolaRepository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Repositories/NasaPowerRepository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Repositories/ProdutorRepository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Repositories/Repository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Repositories/SatVegRepository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/Repositories/TalhaoRepository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/TerraNova.Infraestructure/Persistence/TerraNovaContext.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/AlertaAgricolaConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/LocalizacaoConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/NasaPowerConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/ProdutorConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/PropriedadeConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/SatVegConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/TalhaoConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/TelefoneConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/TerraNova.Infrastructure/Persistence/Configurations/TipoPlantacaoConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="3EXjgA06AiFb7SEwvebI3figAcm" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -189,6 +205,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
@@ -248,7 +265,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1780331916488</updated>
-      <workItem from="1780331922011" duration="7179000" />
+      <workItem from="1780331922011" duration="11838000" />
     </task>
     <servers />
   </component>

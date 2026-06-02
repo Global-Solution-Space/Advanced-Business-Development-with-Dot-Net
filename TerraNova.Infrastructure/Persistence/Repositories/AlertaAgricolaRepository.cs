@@ -3,7 +3,7 @@ using TerraNova.Application.Repositories;
 using TerraNova.Domain.Entities;
 using TerraNova.Domain.Enums;
 
-namespace TerraNova.Infraestructure.Persistence.Repositories;
+namespace TerraNova.Infrastructure.Persistence.Repositories;
 
 public sealed class AlertaAgricolaRepository(TerraNovaContext context)
     : Repository<AlertaAgricola>(context), IAlertaAgricolaRepository

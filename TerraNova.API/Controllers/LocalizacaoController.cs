@@ -2,7 +2,7 @@
 using TerraNova.Application.DTOs;
 using TerraNova.Application.Services.Interfaces;
 
-namespace Advanced_Business_Development_with_Dot_Net.Controllers;
+namespace TerraNova.API.Controllers;
 
 /// <summary>Coordenadas geográficas. Pré-requisito para Propriedade e Talhão.</summary>
 [Route("api/[controller]")]

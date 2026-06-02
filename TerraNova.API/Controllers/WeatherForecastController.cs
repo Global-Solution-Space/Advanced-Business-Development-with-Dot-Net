@@ -1,6 +1,7 @@
+using Advanced_Business_Development_with_Dot_Net;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Advanced_Business_Development_with_Dot_Net.Controllers;
+namespace TerraNova.API.Controllers;
 
 [ApiController]
 [Route("[controller]")]

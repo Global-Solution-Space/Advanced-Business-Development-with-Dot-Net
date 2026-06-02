@@ -2,7 +2,7 @@
 using TerraNova.Application.Repositories;
 using TerraNova.Domain.Common;
 
-namespace TerraNova.Infraestructure.Persistence.Repositories;
+namespace TerraNova.Infrastructure.Persistence.Repositories;
 
 public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : BaseEntity
 {
