@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using TerraNova.Application.DTOs;
 using TerraNova.Application.Repositories;
 using TerraNova.Application.Services.Interfaces;
@@ -12,7 +13,8 @@ public sealed class SatvegService(
     ISatvegRepository satvegRepository,
     ITalhaoRepository talhaoRepository,
     SatVegClient satVegClient,
-    IConfiguration configuration) : ISatvegService
+    IConfiguration configuration,
+    ILogger<SatvegService> logger) : ISatvegService
 {
     private string SatVegToken => configuration["SatVegApiToken"] ?? "Bearer e97dab05-eedc-39b9-a3fd-fa83cb5fef5e";
 
@@ -97,9 +99,9 @@ public sealed class SatvegService(
                 entity.SetDadosJson(JsonSerializer.Serialize(finalJson));
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Em caso de falha na API ou deserialização, aplica o fallback
+            logger.LogError(ex, "Erro ao integrar com a API da Embrapa SATveg");
             entity.SetDadosJson(fallbackJson);
         }
     }
