@@ -18,6 +18,7 @@ public sealed class DadoTemporalConfiguration : IEntityTypeConfiguration<DadoTem
  
         builder.Property(d => d.Valor)
             .HasColumnName("valor")
+            .HasColumnType("NUMBER(18,6)")
             .IsRequired();
  
         builder.Property(d => d.TalhaoId)

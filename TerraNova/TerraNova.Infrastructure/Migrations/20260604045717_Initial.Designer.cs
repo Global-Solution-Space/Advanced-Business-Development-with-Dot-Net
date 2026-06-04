@@ -12,7 +12,7 @@ using TerraNova.Infrastructure.Persistence;
 namespace TerraNova.Infrastructure.Migrations
 {
     [DbContext(typeof(TerraNovaContext))]
-    [Migration("20260602221348_Initial")]
+    [Migration("20260604045717_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -42,10 +42,6 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnType("NVARCHAR2(300)")
                         .HasColumnName("descricao");
 
-                    b.Property<Guid>("NasaPowerId")
-                        .HasColumnType("RAW(16)")
-                        .HasColumnName("nasapower_id_nasapower");
-
                     b.Property<string>("NivelAlerta")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -56,9 +52,9 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnType("NUMBER(10)")
                         .HasColumnName("resolvido");
 
-                    b.Property<Guid>("SatvegId")
+                    b.Property<Guid>("TalhaoId")
                         .HasColumnType("RAW(16)")
-                        .HasColumnName("satveg_id_satveg");
+                        .HasColumnName("talhao_id_talhao");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
@@ -68,11 +64,41 @@ namespace TerraNova.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NasaPowerId");
-
-                    b.HasIndex("SatvegId");
+                    b.HasIndex("TalhaoId");
 
                     b.ToTable("alerta_agricola", (string)null);
+                });
+
+            modelBuilder.Entity("TerraNova.Domain.Entities.DadoTemporal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("RAW(16)")
+                        .HasColumnName("id_dado");
+
+                    b.Property<DateTime>("DataLeitura")
+                        .HasColumnType("TIMESTAMP(7)")
+                        .HasColumnName("data_leitura");
+
+                    b.Property<Guid>("ReqApiId")
+                        .HasColumnType("RAW(16)")
+                        .HasColumnName("req_api_id_api");
+
+                    b.Property<Guid>("TalhaoId")
+                        .HasColumnType("RAW(16)")
+                        .HasColumnName("talhao_id_talhao");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("NUMBER(18,6)")
+                        .HasColumnName("valor");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReqApiId");
+
+                    b.HasIndex("TalhaoId");
+
+                    b.ToTable("dado_temporal", (string)null);
                 });
 
             modelBuilder.Entity("TerraNova.Domain.Entities.Localizacao", b =>
@@ -93,57 +119,6 @@ namespace TerraNova.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("localizacao", (string)null);
-                });
-
-            modelBuilder.Entity("TerraNova.Domain.Entities.NasaPower", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("RAW(16)")
-                        .HasColumnName("id_nasapower");
-
-                    b.Property<string>("DadosJson")
-                        .IsRequired()
-                        .HasColumnType("CLOB")
-                        .HasColumnName("dados_json");
-
-                    b.Property<DateTime>("DataAnalise")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("data_analise");
-
-                    b.Property<string>("DataFim")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("NVARCHAR2(8)")
-                        .HasColumnName("data_fim");
-
-                    b.Property<string>("DataInicio")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("NVARCHAR2(8)")
-                        .HasColumnName("data_inicio");
-
-                    b.Property<decimal>("Elevacao")
-                        .HasColumnType("NUMBER(5,2)")
-                        .HasColumnName("elevacao");
-
-                    b.Property<decimal>("Latitude")
-                        .HasColumnType("NUMBER(9,6)")
-                        .HasColumnName("latitude");
-
-                    b.Property<decimal>("Longitude")
-                        .HasColumnType("NUMBER(10,6)")
-                        .HasColumnName("longitude");
-
-                    b.Property<Guid>("TalhaoId")
-                        .HasColumnType("RAW(16)")
-                        .HasColumnName("talhao_id_talhao");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TalhaoId");
-
-                    b.ToTable("nasapower", (string)null);
                 });
 
             modelBuilder.Entity("TerraNova.Domain.Entities.Produtor", b =>
@@ -221,61 +196,32 @@ namespace TerraNova.Infrastructure.Migrations
                     b.ToTable("propriedade", (string)null);
                 });
 
-            modelBuilder.Entity("TerraNova.Domain.Entities.Satveg", b =>
+            modelBuilder.Entity("TerraNova.Domain.Entities.ReqApi", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("RAW(16)")
-                        .HasColumnName("id_satveg");
-
-                    b.Property<string>("DadosJson")
-                        .IsRequired()
-                        .HasColumnType("CLOB")
-                        .HasColumnName("dados_json");
+                        .HasColumnName("id_api");
 
                     b.Property<DateTime>("DataAnalise")
                         .HasColumnType("TIMESTAMP(7)")
                         .HasColumnName("data_analise");
 
-                    b.Property<string>("Filtro")
-                        .HasMaxLength(3)
-                        .HasColumnType("NVARCHAR2(3)")
-                        .HasColumnName("filtro");
-
-                    b.Property<byte?>("ParametroFiltro")
-                        .HasColumnType("NUMBER(2)")
-                        .HasColumnName("parametro_filtro");
-
-                    b.Property<string>("Poligono")
-                        .IsRequired()
-                        .HasColumnType("CLOB")
-                        .HasColumnName("poligono");
-
-                    b.Property<int?>("PreFiltro")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("pre_filtro");
-
-                    b.Property<int>("Satelite")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("satelite");
-
-                    b.Property<Guid>("TalhaoId")
+                    b.Property<Guid>("TipoApiId")
                         .HasColumnType("RAW(16)")
-                        .HasColumnName("talhao_id_talhao");
+                        .HasColumnName("tipo_api_id_tipo");
 
-                    b.Property<int>("TipoPerfil")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("tipo_perfil");
-
-                    b.Property<int>("TodasEstatisticas")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("todas_estatisticas");
+                    b.Property<string>("TipoParam")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("NVARCHAR2(15)")
+                        .HasColumnName("tipo_param");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TalhaoId");
+                    b.HasIndex("TipoApiId");
 
-                    b.ToTable("satveg", (string)null);
+                    b.ToTable("req_api", (string)null);
                 });
 
             modelBuilder.Entity("TerraNova.Domain.Entities.Talhao", b =>
@@ -352,6 +298,24 @@ namespace TerraNova.Infrastructure.Migrations
                     b.ToTable("telefone", (string)null);
                 });
 
+            modelBuilder.Entity("TerraNova.Domain.Entities.TipoApi", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("RAW(16)")
+                        .HasColumnName("id_tipo");
+
+                    b.Property<string>("NomeTipoApi")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("NVARCHAR2(10)")
+                        .HasColumnName("tipo_api");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tipo_api", (string)null);
+                });
+
             modelBuilder.Entity("TerraNova.Domain.Entities.TipoPlantacao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -372,30 +336,30 @@ namespace TerraNova.Infrastructure.Migrations
 
             modelBuilder.Entity("TerraNova.Domain.Entities.AlertaAgricola", b =>
                 {
-                    b.HasOne("TerraNova.Domain.Entities.NasaPower", "NasaPower")
-                        .WithMany("Alertas")
-                        .HasForeignKey("NasaPowerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TerraNova.Domain.Entities.Satveg", "Satveg")
-                        .WithMany("Alertas")
-                        .HasForeignKey("SatvegId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("NasaPower");
-
-                    b.Navigation("Satveg");
-                });
-
-            modelBuilder.Entity("TerraNova.Domain.Entities.NasaPower", b =>
-                {
                     b.HasOne("TerraNova.Domain.Entities.Talhao", "Talhao")
-                        .WithMany("NasPowers")
+                        .WithMany("Alertas")
                         .HasForeignKey("TalhaoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Talhao");
+                });
+
+            modelBuilder.Entity("TerraNova.Domain.Entities.DadoTemporal", b =>
+                {
+                    b.HasOne("TerraNova.Domain.Entities.ReqApi", "ReqApi")
+                        .WithMany("DadosTemporais")
+                        .HasForeignKey("ReqApiId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TerraNova.Domain.Entities.Talhao", "Talhao")
+                        .WithMany("DadosTemporais")
+                        .HasForeignKey("TalhaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ReqApi");
 
                     b.Navigation("Talhao");
                 });
@@ -419,15 +383,15 @@ namespace TerraNova.Infrastructure.Migrations
                     b.Navigation("Produtor");
                 });
 
-            modelBuilder.Entity("TerraNova.Domain.Entities.Satveg", b =>
+            modelBuilder.Entity("TerraNova.Domain.Entities.ReqApi", b =>
                 {
-                    b.HasOne("TerraNova.Domain.Entities.Talhao", "Talhao")
-                        .WithMany("Satvegs")
-                        .HasForeignKey("TalhaoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("TerraNova.Domain.Entities.TipoApi", "TipoApi")
+                        .WithMany("ReqApis")
+                        .HasForeignKey("TipoApiId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Talhao");
+                    b.Navigation("TipoApi");
                 });
 
             modelBuilder.Entity("TerraNova.Domain.Entities.Talhao", b =>
@@ -475,11 +439,6 @@ namespace TerraNova.Infrastructure.Migrations
                     b.Navigation("Talhao");
                 });
 
-            modelBuilder.Entity("TerraNova.Domain.Entities.NasaPower", b =>
-                {
-                    b.Navigation("Alertas");
-                });
-
             modelBuilder.Entity("TerraNova.Domain.Entities.Produtor", b =>
                 {
                     b.Navigation("Propriedades");
@@ -492,16 +451,21 @@ namespace TerraNova.Infrastructure.Migrations
                     b.Navigation("Talhoes");
                 });
 
-            modelBuilder.Entity("TerraNova.Domain.Entities.Satveg", b =>
+            modelBuilder.Entity("TerraNova.Domain.Entities.ReqApi", b =>
                 {
-                    b.Navigation("Alertas");
+                    b.Navigation("DadosTemporais");
                 });
 
             modelBuilder.Entity("TerraNova.Domain.Entities.Talhao", b =>
                 {
-                    b.Navigation("NasPowers");
+                    b.Navigation("Alertas");
 
-                    b.Navigation("Satvegs");
+                    b.Navigation("DadosTemporais");
+                });
+
+            modelBuilder.Entity("TerraNova.Domain.Entities.TipoApi", b =>
+                {
+                    b.Navigation("ReqApis");
                 });
 
             modelBuilder.Entity("TerraNova.Domain.Entities.TipoPlantacao", b =>

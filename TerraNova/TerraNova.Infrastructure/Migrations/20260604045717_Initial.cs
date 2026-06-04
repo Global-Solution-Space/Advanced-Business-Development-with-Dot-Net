@@ -40,6 +40,18 @@ namespace TerraNova.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tipo_api",
+                columns: table => new
+                {
+                    id_tipo = table.Column<Guid>(type: "RAW(16)", nullable: false),
+                    tipo_api = table.Column<string>(type: "NVARCHAR2(10)", maxLength: 10, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tipo_api", x => x.id_tipo);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tipo_plantacao",
                 columns: table => new
                 {
@@ -99,6 +111,26 @@ namespace TerraNova.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "req_api",
+                columns: table => new
+                {
+                    id_api = table.Column<Guid>(type: "RAW(16)", nullable: false),
+                    tipo_param = table.Column<string>(type: "NVARCHAR2(15)", maxLength: 15, nullable: false),
+                    data_analise = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
+                    tipo_api_id_tipo = table.Column<Guid>(type: "RAW(16)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_req_api", x => x.id_api);
+                    table.ForeignKey(
+                        name: "FK_req_api_tipo_api_tipo_api_id_tipo",
+                        column: x => x.tipo_api_id_tipo,
+                        principalTable: "tipo_api",
+                        principalColumn: "id_tipo",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "talhao",
                 columns: table => new
                 {
@@ -133,58 +165,6 @@ namespace TerraNova.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "nasapower",
-                columns: table => new
-                {
-                    id_nasapower = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    data_inicio = table.Column<string>(type: "NVARCHAR2(8)", maxLength: 8, nullable: false),
-                    data_fim = table.Column<string>(type: "NVARCHAR2(8)", maxLength: 8, nullable: false),
-                    latitude = table.Column<decimal>(type: "NUMBER(9,6)", nullable: false),
-                    longitude = table.Column<decimal>(type: "NUMBER(10,6)", nullable: false),
-                    elevacao = table.Column<decimal>(type: "NUMBER(5,2)", nullable: false),
-                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    dados_json = table.Column<string>(type: "CLOB", nullable: false),
-                    data_analise = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_nasapower", x => x.id_nasapower);
-                    table.ForeignKey(
-                        name: "FK_nasapower_talhao_talhao_id_talhao",
-                        column: x => x.talhao_id_talhao,
-                        principalTable: "talhao",
-                        principalColumn: "id_talhao",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "satveg",
-                columns: table => new
-                {
-                    id_satveg = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    tipo_perfil = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    satelite = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    pre_filtro = table.Column<int>(type: "NUMBER(1)", nullable: true),
-                    filtro = table.Column<string>(type: "NVARCHAR2(3)", maxLength: 3, nullable: true),
-                    parametro_filtro = table.Column<byte>(type: "NUMBER(2)", nullable: true),
-                    poligono = table.Column<string>(type: "CLOB", nullable: false),
-                    todas_estatisticas = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    data_analise = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    dados_json = table.Column<string>(type: "CLOB", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_satveg", x => x.id_satveg);
-                    table.ForeignKey(
-                        name: "FK_satveg_talhao_talhao_id_talhao",
-                        column: x => x.talhao_id_talhao,
-                        principalTable: "talhao",
-                        principalColumn: "id_talhao",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "alerta_agricola",
                 columns: table => new
                 {
@@ -194,39 +174,59 @@ namespace TerraNova.Infrastructure.Migrations
                     nivel_alerta = table.Column<string>(type: "NVARCHAR2(20)", maxLength: 20, nullable: false),
                     resolvido = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     data_alerta = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    satveg_id_satveg = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    nasapower_id_nasapower = table.Column<Guid>(type: "RAW(16)", nullable: false)
+                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_alerta_agricola", x => x.id_alerta);
                     table.ForeignKey(
-                        name: "FK_alerta_agricola_nasapower_nasapower_id_nasapower",
-                        column: x => x.nasapower_id_nasapower,
-                        principalTable: "nasapower",
-                        principalColumn: "id_nasapower",
-                        onDelete: ReferentialAction.Restrict);
+                        name: "FK_alerta_agricola_talhao_talhao_id_talhao",
+                        column: x => x.talhao_id_talhao,
+                        principalTable: "talhao",
+                        principalColumn: "id_talhao",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "dado_temporal",
+                columns: table => new
+                {
+                    id_dado = table.Column<Guid>(type: "RAW(16)", nullable: false),
+                    data_leitura = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
+                    valor = table.Column<decimal>(type: "NUMBER(18,6)", nullable: false),
+                    talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false),
+                    req_api_id_api = table.Column<Guid>(type: "RAW(16)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_dado_temporal", x => x.id_dado);
                     table.ForeignKey(
-                        name: "FK_alerta_agricola_satveg_satveg_id_satveg",
-                        column: x => x.satveg_id_satveg,
-                        principalTable: "satveg",
-                        principalColumn: "id_satveg",
-                        onDelete: ReferentialAction.Restrict);
+                        name: "FK_dado_temporal_req_api_req_api_id_api",
+                        column: x => x.req_api_id_api,
+                        principalTable: "req_api",
+                        principalColumn: "id_api",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_dado_temporal_talhao_talhao_id_talhao",
+                        column: x => x.talhao_id_talhao,
+                        principalTable: "talhao",
+                        principalColumn: "id_talhao",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_alerta_agricola_nasapower_id_nasapower",
+                name: "IX_alerta_agricola_talhao_id_talhao",
                 table: "alerta_agricola",
-                column: "nasapower_id_nasapower");
+                column: "talhao_id_talhao");
 
             migrationBuilder.CreateIndex(
-                name: "IX_alerta_agricola_satveg_id_satveg",
-                table: "alerta_agricola",
-                column: "satveg_id_satveg");
+                name: "IX_dado_temporal_req_api_id_api",
+                table: "dado_temporal",
+                column: "req_api_id_api");
 
             migrationBuilder.CreateIndex(
-                name: "IX_nasapower_talhao_id_talhao",
-                table: "nasapower",
+                name: "IX_dado_temporal_talhao_id_talhao",
+                table: "dado_temporal",
                 column: "talhao_id_talhao");
 
             migrationBuilder.CreateIndex(
@@ -247,9 +247,9 @@ namespace TerraNova.Infrastructure.Migrations
                 column: "produtor_id_produtor");
 
             migrationBuilder.CreateIndex(
-                name: "IX_satveg_talhao_id_talhao",
-                table: "satveg",
-                column: "talhao_id_talhao");
+                name: "IX_req_api_tipo_api_id_tipo",
+                table: "req_api",
+                column: "tipo_api_id_tipo");
 
             migrationBuilder.CreateIndex(
                 name: "IX_talhao_localizacao_id_localizacao",
@@ -281,16 +281,19 @@ namespace TerraNova.Infrastructure.Migrations
                 name: "alerta_agricola");
 
             migrationBuilder.DropTable(
+                name: "dado_temporal");
+
+            migrationBuilder.DropTable(
                 name: "telefone");
 
             migrationBuilder.DropTable(
-                name: "nasapower");
-
-            migrationBuilder.DropTable(
-                name: "satveg");
+                name: "req_api");
 
             migrationBuilder.DropTable(
                 name: "talhao");
+
+            migrationBuilder.DropTable(
+                name: "tipo_api");
 
             migrationBuilder.DropTable(
                 name: "propriedade");

@@ -40,7 +40,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProdutorRepository,        ProdutorRepository>();
         services.AddScoped<ITalhaoRepository,          TalhaoRepository>();
         services.AddScoped<IAlertaAgricolaRepository,  AlertaAgricolaRepository>();
- 
+        services.AddScoped<IReqApiRepository,          ReqApiRepository>();
+        services.AddScoped<IDadoTemporalRepository,    DadoTemporalRepository>();
+        
         // Repositório genérico para entidades sem queries especiais
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
  
@@ -54,7 +56,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILocalizacaoService,    LocalizacaoService>();
         services.AddScoped<ITipoPlantacaoService,  TipoPlantacaoService>();
         services.AddScoped<ITelefoneService,       TelefoneService>();
- 
+        services.AddScoped<ITipoApiService,        TipoApiService>(); 
+        
         // Core
         services.AddScoped<IProdutorService,       ProdutorService>();
         services.AddScoped<IPropriedadeService,    PropriedadeService>();
