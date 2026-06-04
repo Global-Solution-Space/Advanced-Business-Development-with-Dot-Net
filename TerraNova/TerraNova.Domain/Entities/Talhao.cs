@@ -21,8 +21,8 @@ public sealed class Talhao : BaseEntity
     public Guid         LocalizacaoId { get; private set; }
     public Localizacao? Localizacao   { get; private set; }
  
-    public List<Satveg>    Satvegs    { get; private set; } = [];
-    public List<NasaPower> NasPowers  { get; private set; } = [];
+    public List<DadoTemporal>   DadosTemporais { get; private set; } = [];
+    public List<AlertaAgricola> Alertas        { get; private set; } = [];
  
     private Talhao() { }
  

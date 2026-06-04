@@ -10,10 +10,8 @@ public record AlertaAgricolaResponse(
     NivelAlerta NivelAlerta,
     bool        Resolvido,
     DateTime    DataAlerta,
-    Guid        SatvegId,
-    Guid        NasaPowerId)
+    Guid        TalhaoId)
 {
     public static AlertaAgricolaResponse FromDomain(AlertaAgricola a) =>
-        new(a.Id, a.Titulo, a.Descricao, a.NivelAlerta,
-            a.Resolvido, a.DataAlerta, a.SatvegId, a.NasaPowerId);
+        new(a.Id, a.Titulo, a.Descricao, a.NivelAlerta, a.Resolvido, a.DataAlerta, a.TalhaoId);
 }

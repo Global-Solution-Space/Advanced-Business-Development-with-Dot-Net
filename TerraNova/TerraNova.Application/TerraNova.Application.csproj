@@ -15,4 +15,9 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Services\Implementations\SatVegService.cs" />
+      <Compile Remove="Services\Implementations\NasaPowerService.cs" />
+    </ItemGroup>
 </Project>

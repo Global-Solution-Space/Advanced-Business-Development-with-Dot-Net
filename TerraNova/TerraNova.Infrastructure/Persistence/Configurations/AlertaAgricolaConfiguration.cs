@@ -12,18 +12,13 @@ public sealed class AlertaAgricolaConfiguration : IEntityTypeConfiguration<Alert
         builder.ToTable("alerta_agricola");
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id).HasColumnName("id_alerta");
- 
+
         builder.Property(a => a.Titulo)
-            .HasColumnName("titulo")
-            .HasMaxLength(100)
-            .IsRequired();
- 
+            .HasColumnName("titulo").HasMaxLength(100).IsRequired();
+
         builder.Property(a => a.Descricao)
-            .HasColumnName("descricao")
-            .HasMaxLength(300)
-            .IsRequired();
- 
-        // Persiste NivelAlerta como string (VARCHAR2(20)) para legibilidade no banco
+            .HasColumnName("descricao").HasMaxLength(300).IsRequired();
+
         builder.Property(a => a.NivelAlerta)
             .HasColumnName("nivel_alerta")
             .HasMaxLength(20)
@@ -31,33 +26,18 @@ public sealed class AlertaAgricolaConfiguration : IEntityTypeConfiguration<Alert
                 v => v.ToString().ToUpperInvariant(),
                 v => Enum.Parse<NivelAlerta>(v, true))
             .IsRequired();
- 
-        // Persiste bool como NUMBER (0/1)
+
         builder.Property(a => a.Resolvido)
             .HasColumnName("resolvido")
             .HasConversion(v => v ? 1 : 0, v => v == 1)
             .IsRequired();
- 
+
         builder.Property(a => a.DataAlerta)
-            .HasColumnName("data_alerta")
-            .IsRequired();
- 
-        builder.Property(a => a.SatvegId)
-            .HasColumnName("satveg_id_satveg")
-            .IsRequired();
- 
-        builder.HasOne(a => a.Satveg)
-            .WithMany(s => s.Alertas)
-            .HasForeignKey(a => a.SatvegId)
-            .OnDelete(DeleteBehavior.Restrict);
- 
-        builder.Property(a => a.NasaPowerId)
-            .HasColumnName("nasapower_id_nasapower")
-            .IsRequired();
- 
-        builder.HasOne(a => a.NasaPower)
-            .WithMany(n => n.Alertas)
-            .HasForeignKey(a => a.NasaPowerId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasColumnName("data_alerta").IsRequired();
+
+        builder.Property(a => a.TalhaoId)
+            .HasColumnName("talhao_id_talhao").IsRequired();
+
+        // FK para Talhao configurada no TalhaoConfiguration
     }
 }
