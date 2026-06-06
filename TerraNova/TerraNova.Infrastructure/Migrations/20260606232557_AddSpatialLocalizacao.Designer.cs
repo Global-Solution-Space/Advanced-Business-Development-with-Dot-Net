@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Oracle.EntityFrameworkCore.Metadata;
 using TerraNova.Infrastructure.Persistence;
 
@@ -12,8 +13,8 @@ using TerraNova.Infrastructure.Persistence;
 namespace TerraNova.Infrastructure.Migrations
 {
     [DbContext(typeof(TerraNovaContext))]
-    [Migration("20260604045717_Initial")]
-    partial class Initial
+    [Migration("20260606232557_AddSpatialLocalizacao")]
+    partial class AddSpatialLocalizacao
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,13 +109,10 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnType("RAW(16)")
                         .HasColumnName("id_localizacao");
 
-                    b.Property<decimal>("Latitude")
-                        .HasColumnType("NUMBER(8,6)")
-                        .HasColumnName("loc_latitude");
-
-                    b.Property<decimal>("Longitude")
-                        .HasColumnType("NUMBER(9,6)")
-                        .HasColumnName("loc_longitude");
+                    b.Property<Point>("Coordenadas")
+                        .IsRequired()
+                        .HasColumnType("SDO_GEOMETRY")
+                        .HasColumnName("coordenadas");
 
                     b.HasKey("Id");
 

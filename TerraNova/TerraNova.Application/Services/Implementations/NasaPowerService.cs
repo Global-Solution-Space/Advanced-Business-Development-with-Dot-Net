@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using TerraNova.Application.DTOs;
 using TerraNova.Application.Repositories;
 using TerraNova.Application.Services.Interfaces;
@@ -44,7 +44,7 @@ public sealed class NasaPowerService(
         nasaPower.SetDataAnalise();
 
         // Executa a chamada HTTP assíncrona de forma síncrona para obedecer à interface
-        FetchAndSetNasaPowerData(nasaPower, talhao.Localizacao.Latitude, talhao.Localizacao.Longitude, "{}")
+        FetchAndSetNasaPowerData(nasaPower, (decimal)talhao.Localizacao.Coordenadas.Y, (decimal)talhao.Localizacao.Coordenadas.X, "{}")
             .GetAwaiter()
             .GetResult();
 

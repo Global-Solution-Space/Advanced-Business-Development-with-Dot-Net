@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using TerraNova.Application.DTOs;
@@ -51,7 +51,7 @@ public sealed class SatvegService(
 
         // Executa a chamada HTTP assíncrona de forma síncrona para respeitar o retorno da interface
         // Nota: Se a sua classe Localizacao usar nomes diferentes, ajuste "Latitude" e "Longitude" abaixo.
-        FetchAndSetSatVegData(satveg, talhao.Localizacao.Latitude, talhao.Localizacao.Longitude, "{}")
+        FetchAndSetSatVegData(satveg, (decimal)talhao.Localizacao.Coordenadas.Y, (decimal)talhao.Localizacao.Coordenadas.X, "{}")
             .GetAwaiter()
             .GetResult();
 

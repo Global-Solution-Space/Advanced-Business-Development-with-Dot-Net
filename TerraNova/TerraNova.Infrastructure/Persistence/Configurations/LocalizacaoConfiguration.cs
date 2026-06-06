@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TerraNova.Domain.Entities;
 
@@ -12,14 +12,9 @@ public sealed class LocalizacaoConfiguration : IEntityTypeConfiguration<Localiza
         builder.HasKey(l => l.Id);
         builder.Property(l => l.Id).HasColumnName("id_localizacao");
  
-        builder.Property(l => l.Latitude)
-            .HasColumnName("loc_latitude")
-            .HasColumnType("NUMBER(8,6)")
-            .IsRequired();
- 
-        builder.Property(l => l.Longitude)
-            .HasColumnName("loc_longitude")
-            .HasColumnType("NUMBER(9,6)")
+        builder.Property(l => l.Coordenadas)
+            .HasColumnName("coordenadas")
+            .HasColumnType("SDO_GEOMETRY")
             .IsRequired();
     }
 }

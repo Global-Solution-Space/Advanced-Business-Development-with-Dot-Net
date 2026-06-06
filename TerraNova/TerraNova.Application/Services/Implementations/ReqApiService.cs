@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using TerraNova.Application.DTOs;
 using TerraNova.Application.Repositories;
@@ -93,8 +93,8 @@ public sealed class ReqApiService(
                 PreFiltro:       3,
                 Filtro:          "sav",
                 ParametroFiltro: 4,
-                Longitude:       talhao.Localizacao!.Longitude,
-                Latitude:        talhao.Localizacao.Latitude);
+                Longitude:       (decimal)talhao.Localizacao!.Coordenadas.X,
+                Latitude:        (decimal)talhao.Localizacao.Coordenadas.Y);
  
             var resposta = await satVegClient.GetSeriesAsync(SatVegToken, apiRequest);
  
@@ -134,8 +134,8 @@ public sealed class ReqApiService(
         {
             var resposta = await nasaPowerClient.GetDailyDataAsync(
                 dataInicio, dataFim,
-                talhao.Localizacao!.Latitude,
-                talhao.Localizacao.Longitude);
+                (decimal)talhao.Localizacao!.Coordenadas.Y,
+                (decimal)talhao.Localizacao.Coordenadas.X);
  
             if (resposta?.Properties?.Parameter is null) return resultado;
  

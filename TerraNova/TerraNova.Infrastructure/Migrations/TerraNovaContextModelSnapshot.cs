@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Oracle.EntityFrameworkCore.Metadata;
 using TerraNova.Infrastructure.Persistence;
 
@@ -105,13 +106,10 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnType("RAW(16)")
                         .HasColumnName("id_localizacao");
 
-                    b.Property<decimal>("Latitude")
-                        .HasColumnType("NUMBER(8,6)")
-                        .HasColumnName("loc_latitude");
-
-                    b.Property<decimal>("Longitude")
-                        .HasColumnType("NUMBER(9,6)")
-                        .HasColumnName("loc_longitude");
+                    b.Property<Point>("Coordenadas")
+                        .IsRequired()
+                        .HasColumnType("SDO_GEOMETRY")
+                        .HasColumnName("coordenadas");
 
                     b.HasKey("Id");
 

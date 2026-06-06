@@ -1,5 +1,6 @@
-﻿using TerraNova.Domain.Common;
+using TerraNova.Domain.Common;
 using TerraNova.Domain.Exceptions;
+using NetTopologySuite.Geometries;
 
 namespace TerraNova.Domain.Entities;
 
@@ -8,8 +9,7 @@ namespace TerraNova.Domain.Entities;
 /// </summary>
 public sealed class Localizacao : BaseEntity
 {
-    public decimal Latitude  { get; private set; }
-    public decimal Longitude { get; private set; }
+    public Point Coordenadas { get; private set; }
  
     // Navegações inversas — apenas uma das duas estará populada
     public Propriedade? Propriedade { get; private set; }
@@ -17,25 +17,25 @@ public sealed class Localizacao : BaseEntity
  
     private Localizacao() { }
  
-    public Localizacao(decimal latitude, decimal longitude)
+    public Localizacao(Point coordenadas)
     {
-        Validar(latitude, longitude);
-        Latitude  = latitude;
-        Longitude = longitude;
+        Validar(coordenadas);
+        Coordenadas = coordenadas;
     }
  
-    public void Atualizar(decimal latitude, decimal longitude)
+    public void Atualizar(Point coordenadas)
     {
-        Validar(latitude, longitude);
-        Latitude  = latitude;
-        Longitude = longitude;
+        Validar(coordenadas);
+        Coordenadas = coordenadas;
     }
  
-    private static void Validar(decimal lat, decimal lon)
+    private static void Validar(Point coord)
     {
-        if (lat < -90 || lat > 90)
+        if (coord == null)
+            throw new DomainException("Coordenadas não podem ser nulas.");
+        if (coord.Y < -90 || coord.Y > 90)
             throw new DomainException("Latitude deve estar entre -90 e 90.");
-        if (lon < -180 || lon > 180)
+        if (coord.X < -180 || coord.X > 180)
             throw new DomainException("Longitude deve estar entre -180 e 180.");
     }
 }

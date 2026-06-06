@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using NetTopologySuite;
 using TerraNova.Application.Repositories;
 using TerraNova.Application.Services.Implementations;
 using TerraNova.Application.Services.Interfaces;
@@ -26,9 +27,7 @@ public static class ServiceCollectionExtensions
                 $"Connection string '{connectionStringName}' não encontrada.");
  
         services.AddDbContext<TerraNovaContext>(options =>
-            options.UseOracle(connectionString, b =>
-                b.UseOracleSQLCompatibility(
-                    Microsoft.EntityFrameworkCore.OracleSQLCompatibility.DatabaseVersion19)));
+            options.UseOracle(connectionString, b => b.UseNetTopologySuite()));
  
         return services;
     }
