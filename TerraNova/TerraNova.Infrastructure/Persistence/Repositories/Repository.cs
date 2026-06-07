@@ -44,7 +44,7 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
     }
  
     public bool ExistsById(Guid id) =>
-        _set.Any(e => e.Id == id);
+        _set.Count(e => e.Id == id) > 0;
  
     public bool ExistsByNome(string valor)
     {
@@ -53,7 +53,7 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
         ValidarPropriedadeNome();
  
         var normalizado = valor.Trim().ToLowerInvariant();
-        return _set.AsNoTracking().Any(e => EF.Property<string>(e, PropriedadeNome).ToLower() == normalizado);
+        return _set.AsNoTracking().Count(e => EF.Property<string>(e, PropriedadeNome).ToLower() == normalizado) > 0;
     }
  
     private void ValidarPropriedadeNome()

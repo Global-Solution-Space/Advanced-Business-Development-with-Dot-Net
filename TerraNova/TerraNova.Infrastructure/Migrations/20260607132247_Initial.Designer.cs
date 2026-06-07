@@ -13,7 +13,7 @@ using TerraNova.Infrastructure.Persistence;
 namespace TerraNova.Infrastructure.Migrations
 {
     [DbContext(typeof(TerraNovaContext))]
-    [Migration("20260607003302_Initial")]
+    [Migration("20260607132247_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

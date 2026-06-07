@@ -21,4 +21,13 @@ public sealed class TalhaoRepository(TerraNovaContext context)
         Context.Talhoes
             .Include(t => t.Localizacao)
             .FirstOrDefault(t => t.Id == id);
+
+    public decimal SomarAreaPorPropriedade(Guid propriedadeId) =>
+        Context.Talhoes.AsNoTracking()
+            .Where(t => t.PropriedadeId == propriedadeId)
+            .Sum(t => t.VolumArea);
+
+    public bool ExistsByLocalizacaoId(Guid localizacaoId) =>
+        Context.Talhoes.AsNoTracking()
+            .Count(t => t.LocalizacaoId == localizacaoId) > 0;
 }

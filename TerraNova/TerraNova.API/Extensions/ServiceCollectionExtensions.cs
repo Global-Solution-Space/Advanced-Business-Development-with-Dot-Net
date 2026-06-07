@@ -71,7 +71,7 @@ public static class ServiceCollectionExtensions
  
         // Clientes HTTP
         services.AddHttpClient<NasaPowerClient>(client =>
-            client.BaseAddress = new Uri("https://power.larc.nasa.gov/api"));
+            client.BaseAddress = new Uri("https://power.larc.nasa.gov/api/"));
  
         services.AddHttpClient<SatVegClient>(client =>
             client.BaseAddress = new Uri("https://api.cnptia.embrapa.br/satveg/v2"));

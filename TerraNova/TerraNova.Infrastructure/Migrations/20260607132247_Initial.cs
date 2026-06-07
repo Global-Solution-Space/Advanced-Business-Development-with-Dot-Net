@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using NetTopologySuite.Geometries;
 
@@ -272,9 +272,6 @@ namespace TerraNova.Infrastructure.Migrations
                 table: "telefone",
                 column: "produtor_id_produtor",
                 unique: true);
-
-            migrationBuilder.Sql("INSERT INTO USER_SDO_GEOM_METADATA (TABLE_NAME, COLUMN_NAME, DIMINFO, SRID) VALUES ('localizacao', 'coordenadas', SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', -180, 180, 0.005), SDO_DIM_ELEMENT('Y', -90, 90, 0.005)), 4326)");
-            migrationBuilder.Sql("CREATE INDEX idx_localizacao_coordenadas ON localizacao(coordenadas) INDEXTYPE IS MDSYS.SPATIAL_INDEX_V2");
         }
 
         /// <inheritdoc />

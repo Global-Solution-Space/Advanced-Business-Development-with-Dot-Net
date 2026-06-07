@@ -4,15 +4,21 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
+/// <summary>
+/// Alertas agrícolas gerados automaticamente ou manualmente para um talhão.
+/// Permite criar, listar, resolver e reabrir alertas.
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
 public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : ControllerBase
 {
+    /// <summary>Lista todos os alertas agrícolas cadastrados.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<AlertaAgricolaResponse>), StatusCodes.Status200OK)]
     public IActionResult GetAll() => Ok(alertaService.GetAll());
 
+    /// <summary>Obtém um alerta pelo ID.</summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -22,11 +28,13 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         return a is null ? NotFound() : Ok(a);
     }
 
+    /// <summary>Lista todos os alertas de um talhão específico.</summary>
     [HttpGet("talhao/{talhaoId:guid}")]
     [ProducesResponseType(typeof(IReadOnlyList<AlertaAgricolaResponse>), StatusCodes.Status200OK)]
     public IActionResult GetByTalhaoId(Guid talhaoId) =>
         Ok(alertaService.GetByTalhaoId(talhaoId));
 
+    /// <summary>Cria um novo alerta agrícola manual.</summary>
     [HttpPost]
     [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -37,6 +45,7 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
+    /// <summary>Marca um alerta como resolvido.</summary>
     [HttpPatch("{id:guid}/resolver")]
     [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -52,6 +61,7 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         }
     }
 
+    /// <summary>Reabre um alerta que havia sido resolvido.</summary>
     [HttpPatch("{id:guid}/reabrir")]
     [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -67,6 +77,7 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         }
     }
 
+    /// <summary>Remove um alerta pelo ID.</summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

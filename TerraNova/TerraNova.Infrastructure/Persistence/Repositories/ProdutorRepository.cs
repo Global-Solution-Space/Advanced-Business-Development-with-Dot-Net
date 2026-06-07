@@ -19,6 +19,6 @@ public sealed class ProdutorRepository(TerraNovaContext context)
     {
         if (string.IsNullOrWhiteSpace(email)) return false;
         var normalizado = email.Trim().ToLowerInvariant();
-        return Context.Produtores.Any(p => p.Email.ToLower() == normalizado);
+        return Context.Produtores.Count(p => p.Email.ToLower() == normalizado) > 0;
     }
 }

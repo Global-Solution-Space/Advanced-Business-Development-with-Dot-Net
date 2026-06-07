@@ -27,4 +27,7 @@ public sealed class AlertaAgricolaRepository(TerraNovaContext context)
             .OrderByDescending(a => a.NivelAlerta)
             .ThenByDescending(a => a.DataAlerta)
             .ToList();
+
+    public bool ExisteAlertaAtivo(Guid talhaoId, string titulo) =>
+        Context.Alertas.Count(a => a.TalhaoId == talhaoId && a.Titulo == titulo && !a.Resolvido) > 0;
 }

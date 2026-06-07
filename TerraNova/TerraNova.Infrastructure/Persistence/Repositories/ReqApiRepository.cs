@@ -27,4 +27,13 @@ public sealed class ReqApiRepository(TerraNovaContext context)
 
     public int CountDadosByReqApiId(Guid reqApiId) =>
         Context.DadosTemporais.Count(d => d.ReqApiId == reqApiId);
+
+    public Dictionary<Guid, int> CountDadosByReqApiIds(IEnumerable<Guid> reqApiIds)
+    {
+        var ids = reqApiIds.ToList();
+        return Context.DadosTemporais
+            .Where(d => ids.Contains(d.ReqApiId))
+            .GroupBy(d => d.ReqApiId)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
 }

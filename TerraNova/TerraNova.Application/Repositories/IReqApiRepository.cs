@@ -9,4 +9,5 @@ public interface IReqApiRepository : IRepository<ReqApi>
     IReadOnlyList<ReqApi> GetByTipoApiId(Guid tipoApiId);
     IReadOnlyList<ReqApi> GetByTalhaoId(Guid talhaoId);
     int CountDadosByReqApiId(Guid reqApiId);
+    Dictionary<Guid, int> CountDadosByReqApiIds(IEnumerable<Guid> reqApiIds);
 }

@@ -36,19 +36,16 @@ public sealed class TalhaoService(
         var propriedade = propriedadeRepository.GetById(request.PropriedadeId)
             ?? throw new InvalidOperationException("Propriedade não encontrada.");
 
-        var talhoesExistentes = talhaoRepository.GetByPropriedadeId(request.PropriedadeId);
-        var areaExistente = talhoesExistentes.Sum(t => t.VolumArea);
+        // Soma das áreas direto no banco (evita carregar todos os talhões na memória)
+        var areaExistente = talhaoRepository.SomarAreaPorPropriedade(request.PropriedadeId);
         if (areaExistente + request.VolumArea > propriedade.TamanhoTotal)
             throw new InvalidOperationException("A soma das áreas dos talhões não pode exceder o tamanho total da propriedade.");
  
         if (!localizacaoRepository.ExistsById(request.LocalizacaoId))
             throw new InvalidOperationException("Localização não encontrada.");
  
-        // Localização exclusiva: não pode estar associada a outra propriedade ou talhão
-        var localizacaoEmUso = talhaoRepository.GetAll()
-            .Any(t => t.LocalizacaoId == request.LocalizacaoId);
- 
-        if (localizacaoEmUso)
+        // Localização exclusiva: verifica com COUNT direto no banco (evita GetAll completo)
+        if (talhaoRepository.ExistsByLocalizacaoId(request.LocalizacaoId))
             throw new InvalidOperationException("Esta localização já está associada a outro talhão.");
  
         var talhao = request.ToDomain();

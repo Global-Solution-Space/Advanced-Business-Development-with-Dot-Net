@@ -5,8 +5,10 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>TerraNova.API</RootNamespace>
-      <UserSecretsId>c6ba3251-3fab-4bbf-837d-bde51a4a6cc1</UserSecretsId>
-  </PropertyGroup>
+        <UserSecretsId>c6ba3251-3fab-4bbf-837d-bde51a4a6cc1</UserSecretsId>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);1591</NoWarn>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
