@@ -52,7 +52,7 @@ public class TelefoneController(ITelefoneService telefoneService) : ControllerBa
     [ProducesResponseType(typeof(TelefoneResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult Update(Guid id, [FromBody] TelefoneUpdateRequest request)
+    public IActionResult Update(Guid id, [FromBody] TelefoneRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         try

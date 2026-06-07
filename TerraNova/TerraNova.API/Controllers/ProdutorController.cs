@@ -52,7 +52,7 @@ public class ProdutorController(IProdutorService produtorService) : ControllerBa
     [ProducesResponseType(typeof(ProdutorResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult Update(Guid id, [FromBody] ProdutorUpdateRequest request)
+    public IActionResult Update(Guid id, [FromBody] ProdutorRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         try

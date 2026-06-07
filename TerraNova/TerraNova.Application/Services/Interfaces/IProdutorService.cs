@@ -8,6 +8,6 @@ public interface IProdutorService
     ProdutorResponse? GetById(Guid id);
     ProdutorResponse? GetByEmail(string email);
     ProdutorResponse Create(ProdutorRequest request);
-    ProdutorResponse Update(Guid id, ProdutorUpdateRequest request);
+    ProdutorResponse Update(Guid id, ProdutorRequest request);
     bool Delete(Guid id);
 }

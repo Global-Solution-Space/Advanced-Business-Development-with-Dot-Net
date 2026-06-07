@@ -38,7 +38,7 @@ public sealed class TelefoneService(
         return TelefoneResponse.FromDomain(telefone);
     }
 
-    public TelefoneResponse Update(Guid id, TelefoneUpdateRequest request)
+    public TelefoneResponse Update(Guid id, TelefoneRequest request)
     {
         var existing = telefoneRepository.GetById(id)
                        ?? throw new InvalidOperationException("Telefone não encontrado.");

@@ -15,6 +15,7 @@ public class Program
         builder.Services.AddTerraNovaRepositories();
         builder.Services.AddTerraNovaApplicationServices();
 
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
 

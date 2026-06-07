@@ -42,7 +42,7 @@ public sealed class ProdutorService(IProdutorRepository produtorRepository) : IP
         return ProdutorResponse.FromDomain(produtor);
     }
 
-    public ProdutorResponse Update(Guid id, ProdutorUpdateRequest request)
+    public ProdutorResponse Update(Guid id, ProdutorRequest request)
     {
         var existing = produtorRepository.GetById(id)
                        ?? throw new InvalidOperationException("Produtor não encontrado.");

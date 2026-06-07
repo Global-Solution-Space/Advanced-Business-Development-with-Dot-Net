@@ -159,14 +159,16 @@ POST /api/reqapi
 
 ## 6. Camada de Validação
 
-Validadores customizados em `Application/DTOs/Validators/`, injetam serviços via `ValidationContext.GetService`:
+Validadores customizados em `Application/DTOs/Validators/`, injetam serviços via `ValidationContext.GetService`. Utilizam `IHttpContextAccessor` para detectar se a requisição é **create** (POST, sem `{id}` na rota) ou **update** (PUT, com `{id}` na rota), ajustando a verificação de unicidade automaticamente.
 
 | Validador | Aplicado em | Comportamento |
 |---|---|---|
 | `[BrasilCoordenadas]` | `LocalizacaoRequest` | Chama `bigdatacloud.net`; bloqueia se `countryCode != "BR"`; fail-safe (aprova se API cair) |
-| `[UniqueEmail]` | `ProdutorRequest` | Injeta `IProdutorRepository` e checa duplicata |
-| `[UniqueTelefone]` | `ProdutorRequest`, `TelefoneRequest` | Checa `DDD + Numero`; no cadastro de produtor, separa `TelefoneContato` em DDD + número |
+| `[UniqueEmail]` | `ProdutorRequest.Email` | Injeta `IProdutorRepository`; **CREATE:** rejeita se qualquer produtor já possuir o e-mail; **UPDATE:** ignora o próprio produtor (detecta via `{id}` na rota) |
+| `[UniqueTelefone]` | `ProdutorRequest.TelefoneContato`, `TelefoneRequest` (classe) | Checa `DDD + Numero`; **CREATE:** rejeita se qualquer telefone com o mesmo DDD+Número existir; **UPDATE:** ignora o próprio telefone (detecta via `{id}` na rota). No cadastro de produtor, separa `TelefoneContato` em DDD + número da string limpa. |
 
+> `IHttpContextAccessor` é registrado em `Program.cs` via `AddHttpContextAccessor()`.
+> `ProdutorRequest` e `TelefoneRequest` são reutilizados para **create** e **update** — não existem DTOs separados para update.
 > `LocalizacaoRequest.ToDomain()` → `Coordinate(longitude, latitude)` — ordem X=lon, Y=lat (WKT padrão).
 
 ---
@@ -307,6 +309,13 @@ Invoke-RestMethod "$base/AlertaAgricola/talhao/<talhaoId>" -Method Get
 Invoke-RestMethod "$base/DadoTemporal/talhao/<talhaoId>"   -Method Get
 Invoke-RestMethod "$base/ReqApi/talhao/<talhaoId>"         -Method Get
 
+# ── Update (PUT) ──────────────────────────────────────────────────────────────
+Invoke-RestMethod "$base/Produtor/<id>" -Method Put -ContentType "application/json" `
+  -Body '{"nome":"Joao Atualizado","email":"joao@terranova.com","senha":"123456","telefoneContato":"11999999999"}'
+
+Invoke-RestMethod "$base/Telefone/<id>" -Method Put -ContentType "application/json" `
+  -Body '{"ddd":"11","numero":"988887777","produtorId":"<id>"}'
+
 # ── Ciclo de vida do Alerta ───────────────────────────────────────────────────
 Invoke-RestMethod "$base/AlertaAgricola/<alertaId>/resolver" -Method Patch
 Invoke-RestMethod "$base/AlertaAgricola/<alertaId>/reabrir"  -Method Patch
@@ -402,6 +411,25 @@ Invoke-RestMethod "$base/Telefone/by-produtor/$($produtor.id)" -Method Get
 Invoke-RestMethod "$base/Propriedade/by-produtor/$($produtor.id)" -Method Get
 Invoke-RestMethod "$base/Talhao/by-propriedade/$($propriedade.id)" -Method Get
 Invoke-RestMethod "$base/Talhao/by-tipo-plantacao/$($tipoPlantacao.id)" -Method Get
+
+# ── Update (PUT) ──────────────────────────────────────────────────────────────
+$produtorAtualizado = Invoke-ApiJson "$base/Produtor/$($produtor.id)" "Put" @{
+  nome = "Joao Atualizado $runId"
+  email = $produtor.email
+  senha = "123456"
+  telefoneContato = $produtor.telefoneContato
+}
+Write-Host "Produtor atualizado: $($produtorAtualizado.nome)"
+
+$telefoneDetalhado = Invoke-RestMethod "$base/Telefone/by-produtor/$($produtor.id)" -Method Get
+if ($null -ne $telefoneDetalhado) {
+  Invoke-ApiJson "$base/Telefone/$($telefoneDetalhado.id)" "Put" @{
+    ddd = $telefoneDetalhado.ddd
+    numero = "9$($runId.Substring(0,8))"
+    produtorId = $produtor.id
+  } | Out-Null
+  Write-Host "Telefone atualizado para: ($($telefoneDetalhado.ddd)) 9$($runId.Substring(0,8))"
+}
 
 try {
   $reqNasa = Invoke-ApiJson "$base/ReqApi" "Post" @{
