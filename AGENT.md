@@ -27,7 +27,7 @@ Todas as entidades herdam de `BaseEntity` (→ `Id: Guid`). Banco: **Oracle**.
 | Entidade | Relacionamentos | Regra crítica |
 |---|---|---|
 | `Produtor` | 1:N `Propriedade`, 1:1 `Telefone` | Email único; senha ≥ 6 chars |
-| `Telefone` | N:1 `Produtor` | DDD + Numero únicos |
+| `Telefone` | 1:1 `Produtor` | FK única por produtor; `DDD + Numero` bloqueado pela aplicação |
 | `Localizacao` | 1:1 com `Propriedade` ou `Talhao` | `Point` (NTS) → `SDO_GEOMETRY` SRID 4326; sem FK própria |
 | `Propriedade` | N:1 `Produtor`, 1:1 `Localizacao`, 1:N `Talhao` | Localização exclusiva (UNIQUE INDEX) |
 | `Talhao` | N:1 `Propriedade`, 1:1 `Localizacao`, N:1 `TipoPlantacao` | `SUM(VolumArea) ≤ Propriedade.TamanhoTotal` |
@@ -165,7 +165,7 @@ Validadores customizados em `Application/DTOs/Validators/`, injetam serviços vi
 |---|---|---|
 | `[BrasilCoordenadas]` | `LocalizacaoRequest` | Chama `bigdatacloud.net`; bloqueia se `countryCode != "BR"`; fail-safe (aprova se API cair) |
 | `[UniqueEmail]` | `ProdutorRequest` | Injeta `IProdutorRepository` e checa duplicata |
-| `[UniqueTelefone]` | `TelefoneRequest` | Checa `DDD + Numero` concatenados |
+| `[UniqueTelefone]` | `ProdutorRequest`, `TelefoneRequest` | Checa `DDD + Numero`; no cadastro de produtor, separa `TelefoneContato` em DDD + número |
 
 > `LocalizacaoRequest.ToDomain()` → `Coordinate(longitude, latitude)` — ordem X=lon, Y=lat (WKT padrão).
 
@@ -206,7 +206,7 @@ Validadores customizados em `Application/DTOs/Validators/`, injetam serviços vi
 
 ## 9. Banco de Dados e Migrations
 
-- Banco Oracle FIAP — tabelas criadas via DDL externo; EF Core gerencia apenas `__EFMigrationsHistory`.
+- Banco Oracle FIAP — tabelas criadas e versionadas pelo EF Core Migrations.
 - Metadados espaciais (`USER_SDO_GEOM_METADATA`) e índice (`MDSYS.SPATIAL_INDEX_V2`) requerem privilégios DBA — criar manualmente.
 - `NetTopologySuite` com SRID 4326 (WGS 84) — configurado via `UseNetTopologySuite()` em `ServiceCollectionExtensions`.
 
@@ -218,6 +218,7 @@ dotnet user-secrets set "ConnectionStrings:TerraNovaOracle" "User Id=RMxxxxxx;Pa
 # Migrations (rodar dentro de TerraNova\)
 dotnet ef migrations add Initial --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
 dotnet ef database update        --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
+dotnet ef database update 0      --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
 dotnet ef database drop --force  --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
 
 # Executar
@@ -270,7 +271,9 @@ Context.Propriedades.AsNoTracking().Count(p => p.LocalizacaoId == id) > 0;
 
 ---
 
-## 12. Testes via PowerShell
+## 12. Testes via PowerShell (legado)
+
+> **Não usar este bloco como fonte atual.** Ele foi mantido apenas como histórico; use o script automático da seção 12.1.
 
 ```powershell
 $base = "http://localhost:5160/api"
@@ -314,4 +317,154 @@ Invoke-RestMethod "$base/Produtor" -Method Post -ContentType "application/json" 
 
 Invoke-RestMethod "$base/Talhao"   -Method Post -ContentType "application/json" `
   -Body '{"nomeTalhao":"Grande","volumArea":200,"tipoPlantacaoId":"<id>","propriedadeId":"<id>","localizacaoId":"<id>"}'
+```
+
+### 12.1 Script automático atual
+
+> Execute a API antes: `dotnet run --project .\TerraNova.API`
+
+```powershell
+$base = "http://localhost:5160/api"
+$runId = (Get-Date -Format "HHmmss")
+
+function Invoke-ApiJson {
+  param(
+    [Parameter(Mandatory=$true)][string]$Uri,
+    [Parameter(Mandatory=$true)][string]$Method,
+    [object]$Body = $null
+  )
+
+  $json = if ($null -ne $Body) { $Body | ConvertTo-Json -Depth 8 } else { $null }
+  Invoke-RestMethod $Uri -Method $Method -ContentType "application/json" -Body $json
+}
+
+function Expect-BadRequest {
+  param(
+    [Parameter(Mandatory=$true)][string]$Label,
+    [Parameter(Mandatory=$true)][scriptblock]$Action
+  )
+
+  try {
+    & $Action | Out-Null
+    throw "$Label deveria retornar 400, mas passou."
+  }
+  catch {
+    $statusCode = $_.Exception.Response.StatusCode.value__
+    if ($statusCode -ne 400) { throw }
+    Write-Host "OK 400 - $Label"
+  }
+}
+
+$produtor = Invoke-ApiJson "$base/Produtor" "Post" @{
+  nome = "Joao $runId"
+  email = "joao$runId@tn.com"
+  senha = "123456"
+  telefoneContato = "1199999$runId".Substring(0, 11)
+}
+
+$localizacaoPropriedade = Invoke-ApiJson "$base/Localizacao" "Post" @{
+  latitude = -12.9714
+  longitude = -38.5014
+}
+
+$localizacaoTalhao = Invoke-ApiJson "$base/Localizacao" "Post" @{
+  latitude = -12.9814
+  longitude = -38.5114
+}
+
+$localizacaoTalhaoInvalido = Invoke-ApiJson "$base/Localizacao" "Post" @{
+  latitude = -12.9914
+  longitude = -38.5214
+}
+
+$tipoPlantacao = Invoke-ApiJson "$base/TipoPlantacao" "Post" @{ tipoPlant = "Soja $runId" }
+$tipoApiNasa = Invoke-ApiJson "$base/TipoApi" "Post" @{ nomeTipoApi = "NASA$runId".Substring(0, 10) }
+$tipoApiSatveg = Invoke-ApiJson "$base/TipoApi" "Post" @{ nomeTipoApi = "SAT$runId" }
+
+$propriedade = Invoke-ApiJson "$base/Propriedade" "Post" @{
+  nome = "Fazenda $runId"
+  tamanhoTotal = 100
+  produtorId = $produtor.id
+  localizacaoId = $localizacaoPropriedade.id
+}
+
+$talhao = Invoke-ApiJson "$base/Talhao" "Post" @{
+  nomeTalhao = "Talhao $runId"
+  volumArea = 50
+  tipoPlantacaoId = $tipoPlantacao.id
+  propriedadeId = $propriedade.id
+  localizacaoId = $localizacaoTalhao.id
+}
+
+Invoke-RestMethod "$base/Produtor/$($produtor.id)" -Method Get
+Invoke-RestMethod "$base/Produtor/by-email?email=$($produtor.email)" -Method Get
+Invoke-RestMethod "$base/Telefone/by-produtor/$($produtor.id)" -Method Get
+Invoke-RestMethod "$base/Propriedade/by-produtor/$($produtor.id)" -Method Get
+Invoke-RestMethod "$base/Talhao/by-propriedade/$($propriedade.id)" -Method Get
+Invoke-RestMethod "$base/Talhao/by-tipo-plantacao/$($tipoPlantacao.id)" -Method Get
+
+try {
+  $reqNasa = Invoke-ApiJson "$base/ReqApi" "Post" @{
+    tipoParam = 1
+    tipoApiId = $tipoApiNasa.id
+    talhaoId = $talhao.id
+  }
+  Invoke-RestMethod "$base/DadoTemporal/req-api/$($reqNasa.id)" -Method Get
+}
+catch {
+  Write-Warning "Integração NASA POWER não validada: $($_.Exception.Message)"
+}
+
+try {
+  $reqSatveg = Invoke-ApiJson "$base/ReqApi" "Post" @{
+    tipoParam = 0
+    tipoApiId = $tipoApiSatveg.id
+    talhaoId = $talhao.id
+  }
+  Invoke-RestMethod "$base/DadoTemporal/req-api/$($reqSatveg.id)" -Method Get
+}
+catch {
+  Write-Warning "Integração SATVeg não validada: $($_.Exception.Message)"
+}
+
+Invoke-RestMethod "$base/DadoTemporal/talhao/$($talhao.id)" -Method Get
+Invoke-RestMethod "$base/ReqApi/talhao/$($talhao.id)" -Method Get
+
+$alerta = Invoke-ApiJson "$base/AlertaAgricola" "Post" @{
+  titulo = "Alerta $runId"
+  descricao = "Teste manual do ciclo de vida"
+  nivelAlerta = 2
+  talhaoId = $talhao.id
+}
+Invoke-RestMethod "$base/AlertaAgricola/talhao/$($talhao.id)" -Method Get
+Invoke-RestMethod "$base/AlertaAgricola/$($alerta.id)/resolver" -Method Patch
+Invoke-RestMethod "$base/AlertaAgricola/$($alerta.id)/reabrir" -Method Patch
+
+Expect-BadRequest "e-mail duplicado" {
+  Invoke-ApiJson "$base/Produtor" "Post" @{
+    nome = "Dup Email"
+    email = $produtor.email
+    senha = "123456"
+    telefoneContato = "1188888$runId".Substring(0, 11)
+  }
+}
+
+Expect-BadRequest "telefone duplicado" {
+  Invoke-ApiJson "$base/Produtor" "Post" @{
+    nome = "Dup Tel"
+    email = "duptel$runId@tn.com"
+    senha = "123456"
+    telefoneContato = $produtor.telefoneContato
+  }
+}
+
+Expect-BadRequest "área de talhão maior que a propriedade" {
+  Invoke-ApiJson "$base/Talhao" "Post" @{
+    nomeTalhao = "Grande $runId"
+    volumArea = 200
+    tipoPlantacaoId = $tipoPlantacao.id
+    propriedadeId = $propriedade.id
+    localizacaoId = $localizacaoTalhaoInvalido.id
+  }
+}
 ```

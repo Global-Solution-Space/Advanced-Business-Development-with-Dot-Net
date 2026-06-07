@@ -9,7 +9,7 @@ namespace TerraNova.Domain.Entities;
 /// </summary>
 public sealed class Localizacao : BaseEntity
 {
-    public Point Coordenadas { get; private set; }
+    public Point Coordenadas { get; private set; } = default!;
  
     // Navegações inversas — apenas uma das duas estará populada
     public Propriedade? Propriedade { get; private set; }
