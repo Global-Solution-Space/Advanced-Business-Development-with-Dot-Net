@@ -23,6 +23,12 @@ public class ReqApiController(IReqApiService reqApiService) : ControllerBase
         return r is null ? NotFound() : Ok(r);
     }
 
+    [HttpGet("talhao/{talhaoId:guid}")]
+    [ProducesResponseType(typeof(IReadOnlyList<ReqApiResponse>), StatusCodes.Status200OK)]
+    public IActionResult GetByTalhaoId(Guid talhaoId) =>
+        Ok(reqApiService.GetByTalhaoId(talhaoId));
+
+
     [HttpPost]
     [ProducesResponseType(typeof(ReqApiResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -1,4 +1,4 @@
-﻿using TerraNova.Application.DTOs;
+using TerraNova.Application.DTOs;
 using TerraNova.Domain.Enums;
 
 namespace TerraNova.Application.Services.Interfaces;
@@ -9,6 +9,7 @@ public interface IReqApiService
     ReqApiResponse? GetById(Guid id);
     IReadOnlyList<ReqApiResponse> GetByTipoParam(TipoParamReqApi tipoParam);
     IReadOnlyList<ReqApiResponse> GetByTipoApiId(Guid tipoApiId);
+    IReadOnlyList<ReqApiResponse> GetByTalhaoId(Guid talhaoId);
  
     /// <summary>
     /// Cria a requisição, chama a API externa correspondente ao TipoParam

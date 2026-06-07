@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TerraNova.Application.Repositories;
 using TerraNova.Domain.Entities;
 using TerraNova.Domain.Enums;
@@ -18,5 +18,10 @@ public sealed class ReqApiRepository(TerraNovaContext context)
         Context.ReqApis.AsNoTracking()
             .Where(r => r.TipoApiId == tipoApiId)
             .OrderByDescending(r => r.DataAnalise)
+            .ToList();
+
+    public IReadOnlyList<ReqApi> GetByTalhaoId(Guid talhaoId) =>
+        Context.ReqApis.AsNoTracking()
+            .Where(r => r.DadosTemporais.Any(d => d.TalhaoId == talhaoId))
             .ToList();
 }

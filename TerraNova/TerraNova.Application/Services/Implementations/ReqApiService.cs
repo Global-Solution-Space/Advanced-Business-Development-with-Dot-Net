@@ -44,6 +44,11 @@ public sealed class ReqApiService(
             .Select(r => ReqApiResponse.FromDomain(r, r.DadosTemporais.Count))
             .ToList();
  
+    public IReadOnlyList<ReqApiResponse> GetByTalhaoId(Guid talhaoId) =>
+        reqApiRepository.GetByTalhaoId(talhaoId)
+            .Select(r => ReqApiResponse.FromDomain(r, r.DadosTemporais.Count))
+            .ToList();
+ 
     public ReqApiResponse Create(ReqApiRequest request)
     {
         if (!tipoApiRepository.ExistsById(request.TipoApiId))
