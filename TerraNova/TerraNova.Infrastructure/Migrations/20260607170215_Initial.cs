@@ -172,7 +172,7 @@ namespace TerraNova.Infrastructure.Migrations
                     titulo = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
                     descricao = table.Column<string>(type: "NVARCHAR2(300)", maxLength: 300, nullable: false),
                     nivel_alerta = table.Column<string>(type: "NVARCHAR2(20)", maxLength: 20, nullable: false),
-                    resolvido = table.Column<int>(type: "NUMBER(10)", nullable: false),
+                    resolvido = table.Column<string>(type: "CHAR(1)", nullable: false),
                     data_alerta = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
                     talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false)
                 },
@@ -192,7 +192,7 @@ namespace TerraNova.Infrastructure.Migrations
                 columns: table => new
                 {
                     id_dado = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    data_leitura = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
+                    data_leitura = table.Column<DateTime>(type: "DATE", nullable: false),
                     valor = table.Column<decimal>(type: "NUMBER(18,6)", nullable: false),
                     talhao_id_talhao = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     req_api_id_api = table.Column<Guid>(type: "RAW(16)", nullable: false)

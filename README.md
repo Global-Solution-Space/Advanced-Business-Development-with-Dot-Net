@@ -82,8 +82,9 @@
 A aplicação segue os princípios da **Clean Architecture** (Arquitetura Limpa) e **Domain-Driven Design (DDD)**, dividida em quatro camadas principais:
 1. **TerraNova.Domain:** Contém as entidades centrais (`Produtor`, `Talhao`, `Localizacao`), validações de domínio (`DomainException`) e lógicas puras, sem dependência de tecnologia.
 2. **TerraNova.Application:** Orquestra os casos de uso. Contém DTOs (Data Transfer Objects), Contratos (Interfaces) de Serviços e Repositórios, blindando o domínio contra alterações na API.
-3. **TerraNova.Infrastructure:** Gerencia o acesso a dados e serviços externos. Implementa o padrão *Repository* com o EF Core, gerencia as integrações via `HttpClient` (NASA Power e SATVeg) e contém as Migrations do banco.
-4. **TerraNova.API:** Camada de apresentação e roteamento (Controllers), injeção de dependências e configuração do Swagger.
+3. **TerraNova.Infrastructure:** Gerencia o acesso a dados (EF Core + Oracle). Implementa o padrão *Repository* e contém as Migrations do banco.
+4. **TerraNova.Integration:** Isola os clientes HTTP (`HttpClient`) responsáveis por buscar dados externos — NASA POWER (precipitação) e Embrapa SATVeg (NDVI). Garante que detalhes de integração nunca vazem para camadas superiores.
+5. **TerraNova.API:** Camada de apresentação e roteamento (Controllers), injeção de dependências e configuração do Swagger.
 
 ### Por que escolheram essa arquitetura?
 A Clean Architecture permite o princípio da **Inversão de Dependência**. Se futuramente precisarmos trocar o banco de dados Oracle por PostgreSQL ou substituir a API do SATVeg por outro provedor geoespacial, só precisaremos mexer na camada de **Infrastructure**. O núcleo da regra de negócio (Domain e Application) permanece intacto e perfeitamente isolado.
@@ -129,7 +130,7 @@ Toda alteração de banco deve passar pelo fluxo:
 2. Execução de `dotnet ef migrations add NomeDaAlteracao`.
 3. Execução de `dotnet ef database update` para aplicar no Oracle.
 
-*Nota de destaque:* O projeto inclui uma migration especial (`AddSpatialLocalizacao`) onde rodamos **SQL Nativo** dentro do método `Up` para forçar o Oracle a registrar os metadados bidimensionais em `USER_SDO_GEOM_METADATA` e criar o índice espacial inteligente (`SPATIAL_INDEX_V2`).
+*Nota de destaque:* O EF Core gerencia a tabela `__EFMigrationsHistory`. A criação de metadados espaciais (`USER_SDO_GEOM_METADATA`) e do índice espacial (`MDSYS.SPATIAL_INDEX_V2`) exige privilégios de DBA no Oracle e deve ser executada manualmente pelo administrador do banco. O mapeamento da coluna `SDO_GEOMETRY` é feito via `NetTopologySuite`, com SRID 4326 (WGS 84).
 
 ---
 
@@ -149,9 +150,11 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 ## 🚀 Como Executar o Projeto
 
 1. **Configuração de Secrets (Banco Oracle FIAP):**
-   No terminal, na raiz do projeto `TerraNova.API`, rode para armazenar suas credenciais com segurança:
+   No terminal, na raiz do projeto `TerraNova\TerraNova.API`, rode para armazenar suas credenciais com segurança:
    ```powershell
-   dotnet user-secrets set "ConnectionStrings:TerraNovaOracle" "User Id=RMxxxxxx;Password=xxxxxx;Data Source=oracle.fiap.com.br:1521/orcl;" --project .\TerraNova.API
+   cd TerraNova\TerraNova.API
+   dotnet user-secrets init
+   dotnet user-secrets set "ConnectionStrings:TerraNovaOracle" "User Id=RMxxxxxx;Password=xxxxxx;Data Source=oracle.fiap.com.br:1521/orcl;"
    ```
 
 2. **Atualização do Banco de Dados (Gerar tabelas e schemas espaciais):**
@@ -161,9 +164,9 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 
 3. **Execução Local:**
    ```powershell
-   dotnet run --project .\TerraNova.API
+   dotnet run --project .\TerraNova\TerraNova.API
    ```
-   Acesse a URL (ex: `http://localhost:5200/swagger`) fornecida no terminal para visualizar os endpoints ativos e testar a aplicação de ponta a ponta.
+   Acesse a URL (ex: `http://localhost:5160/swagger`) fornecida no terminal para visualizar os endpoints ativos e testar a aplicação de ponta a ponta.
 
 ---
 
@@ -221,19 +224,38 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | DELETE | `/api/telefone/{id}` | Remover registro de telefone |
 
 ### Requisições de API Externa (Integrações)
+
+A integração com APIs externas (NASA POWER e Embrapa SATVeg) é realizada de forma **assíncrona** via `async/await` (Controller → Service → HttpClient), garantindo alta performance sem bloquear threads do Kestrel. Ao chamar o endpoint de criação, o sistema:
+
+1. Valida o TipoApi e Talhão
+2. Cria o cabeçalho `ReqApi`
+3. Chama a API externa (NASA ou SATVeg) usando coordenadas do Talhão
+4. Filtra dados inválidos (sensor com defeito NASA `<= -900`, datas SATVEG `>= 2020-01-01`)
+5. Persiste `DadoTemporal` em lote
+6. **Gera alertas automáticos** baseados em thresholds de negócio
+
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| GET | `/api/reqapi` | Lista requisições paginadas |
-| GET | `/api/reqapi/{id}` | Busca requisição por ID |
-| GET | `/api/reqapi/talhao/{idTalhao}` | Lista requisições relacionadas a um talhão |
-| POST | `/api/reqapi` | Executa integração externa e persiste dados temporais |
+| GET | `/api/reqapi` | Lista requisições (com contagem de dados otimizada via `COUNT` no banco) |
+| GET | `/api/reqapi/{id}` | Busca requisição por ID (com contagem de dados) |
+| GET | `/api/reqapi/talhao/{idTalhao}` | Lista requisições de um talhão via `EXISTS` otimizado (`.Any()`) |
+| POST | `/api/reqapi` | **Async** - Executa integração e persiste dados + alertas |
 | DELETE | `/api/reqapi/{id}` | Remove requisição |
 
 **Compatibilidade de parâmetros de integração:**
-| API Externa | `tipoParam` aceito |
-| --- | --- |
-| `NASAPOWER` | `PRECTOTCORR` |
-| `SATVEG` | `NDVI` |
+| API Externa | `tipoParam` (enum) | Valor JSON |
+| --- | --- | --- |
+| `NASAPOWER` | `PRECTOTCORR` (chuva) | `1` |
+| `SATVEG` | `NDVI` (vegetação) | `0` |
+
+**Thresholds de Alerta Automático:**
+| API | Condição | Nível | Título |
+| --- | --- | --- | --- |
+| NASA | Chuva 3 dias > 80mm | Alto | Risco de Alagamento |
+| NASA | Chuva 15 dias < 10mm | Crítico | Seca Severa |
+| NASA | Chuva 15 dias < 25mm | Médio | Estresse Hídrico |
+| SATVEG | NDVI < 0.2 | Crítico | Anomalia Vegetativa Severa |
+| SATVEG | NDVI < 0.4 | Médio | Baixo Vigor Vegetativo |
 
 ### Dados Temporais
 | Método | Rota | Descrição |
@@ -244,11 +266,17 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | GET | `/api/dadostemporal/req-api/{reqApiId}` | Lista dados temporais gerados por uma requisição específica |
 
 ### Alertas Agrícolas
+
+Sistema de alertas reativos com **deduplicação automática**: não cria alertas duplicados para o mesmo talhão + mesmo título enquanto não resolvido.
+
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| GET | `/api/alertaagricola` | Lista alertas |
+| GET | `/api/alertaagricola` | Lista todos os alertas |
 | GET | `/api/alertaagricola/{id}` | Busca alerta por ID |
-| GET | `/api/alertaagricola/talhao/{talhaoId}` | Lista alertas gerados para um talhão |
+| GET | `/api/alertaagricola/talhao/{talhaoId}` | Lista alertas de um talhão |
 | POST | `/api/alertaagricola` | Cria alerta manual |
 | PATCH | `/api/alertaagricola/{id}/resolver` | Marca alerta como resolvido |
+| PATCH | `/api/alertaagricola/{id}/reabrir` | Reabre alerta resolvido |
 | DELETE | `/api/alertaagricola/{id}` | Remove alerta |
+
+**Regras de Deduplicação:** Não permite alerta ativo (`resolvido = false`) com mesmo `titulo` para o mesmo `talhaoId`.

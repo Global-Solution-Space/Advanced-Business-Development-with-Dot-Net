@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TerraNova.Domain.Entities;
 using TerraNova.Domain.Enums;
@@ -29,7 +29,10 @@ public sealed class AlertaAgricolaConfiguration : IEntityTypeConfiguration<Alert
 
         builder.Property(a => a.Resolvido)
             .HasColumnName("resolvido")
-            .HasConversion(v => v ? 1 : 0, v => v == 1)
+            .HasColumnType("CHAR(1)")
+            .HasConversion<string>(
+                v => v ? "1" : "0",
+                v => v == "1")
             .IsRequired();
 
         builder.Property(a => a.DataAlerta)

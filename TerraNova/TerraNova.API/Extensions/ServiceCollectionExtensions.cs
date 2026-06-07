@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
     {
         // Repositórios especializados
         services.AddScoped<IProdutorRepository,        ProdutorRepository>();
+        services.AddScoped<IPropriedadeRepository,     PropriedadeRepository>();
         services.AddScoped<ITalhaoRepository,          TalhaoRepository>();
         services.AddScoped<IAlertaAgricolaRepository,  AlertaAgricolaRepository>();
         services.AddScoped<IReqApiRepository,          ReqApiRepository>();

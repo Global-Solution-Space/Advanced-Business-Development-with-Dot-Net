@@ -13,7 +13,7 @@ using TerraNova.Infrastructure.Persistence;
 namespace TerraNova.Infrastructure.Migrations
 {
     [DbContext(typeof(TerraNovaContext))]
-    [Migration("20260607132247_Initial")]
+    [Migration("20260607170215_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -49,8 +49,9 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnType("NVARCHAR2(20)")
                         .HasColumnName("nivel_alerta");
 
-                    b.Property<int>("Resolvido")
-                        .HasColumnType("NUMBER(10)")
+                    b.Property<string>("Resolvido")
+                        .IsRequired()
+                        .HasColumnType("CHAR(1)")
                         .HasColumnName("resolvido");
 
                     b.Property<Guid>("TalhaoId")
@@ -78,7 +79,7 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnName("id_dado");
 
                     b.Property<DateTime>("DataLeitura")
-                        .HasColumnType("TIMESTAMP(7)")
+                        .HasColumnType("DATE")
                         .HasColumnName("data_leitura");
 
                     b.Property<Guid>("ReqApiId")

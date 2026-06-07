@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TerraNova.Domain.Entities;
 
@@ -14,6 +14,7 @@ public sealed class DadoTemporalConfiguration : IEntityTypeConfiguration<DadoTem
  
         builder.Property(d => d.DataLeitura)
             .HasColumnName("data_leitura")
+            .HasColumnType("DATE")
             .IsRequired();
  
         builder.Property(d => d.Valor)
