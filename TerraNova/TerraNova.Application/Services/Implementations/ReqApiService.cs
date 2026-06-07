@@ -55,19 +55,13 @@ public sealed class ReqApiService(
         if (talhao.Localizacao is null)
             throw new InvalidOperationException("Localização do talhão não foi encontrada.");
  
-        if (request.TipoParam == TipoParamReqApi.Prectotcorr)
-        {
-            if (string.IsNullOrWhiteSpace(request.DataInicio) || string.IsNullOrWhiteSpace(request.DataFim))
-                throw new InvalidOperationException("DataInicio e DataFim são obrigatórios para consultas de precipitação (PRECTOTCORR).");
-        }
- 
         var reqApi = new ReqApi(request.TipoParam, request.TipoApiId);
         reqApiRepository.Add(reqApi);
  
         var dados = request.TipoParam switch
         {
             TipoParamReqApi.Nvdi        => BuscarDadosSatVeg(reqApi.Id, talhao).GetAwaiter().GetResult(),
-            TipoParamReqApi.Prectotcorr => BuscarDadosNasaPower(reqApi.Id, talhao, request.DataInicio!, request.DataFim!).GetAwaiter().GetResult(),
+            TipoParamReqApi.Prectotcorr => BuscarDadosNasaPower(reqApi.Id, talhao).GetAwaiter().GetResult(),
             _                           => []
         };
  
@@ -117,6 +111,10 @@ public sealed class ReqApiService(
                     reqApiId));
             }
         }
+        catch (InvalidOperationException)
+        {
+            throw; // Permite que a validação de regra de negócio/limites do oceano suba para o Controller
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Erro ao integrar com a API SatVeg/Embrapa para o talhão {TalhaoId}", talhao.Id);
@@ -126,12 +124,15 @@ public sealed class ReqApiService(
     }
  
     private async Task<List<DadoTemporal>> BuscarDadosNasaPower(
-        Guid reqApiId, Talhao talhao, string dataInicio, string dataFim)
+        Guid reqApiId, Talhao talhao)
     {
         var resultado = new List<DadoTemporal>();
  
         try
         {
+            string dataInicio = "20200101";
+            string dataFim = DateTime.UtcNow.ToString("yyyyMMdd");
+
             var resposta = await nasaPowerClient.GetDailyDataAsync(
                 dataInicio, dataFim,
                 (decimal)talhao.Localizacao!.Coordenadas.Y,

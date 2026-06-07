@@ -14,12 +14,10 @@
       <change afterPath="$PROJECT_DIR$/TerraNova.API/Controllers/ProdutorController.cs" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/Controllers/TelefoneController.cs" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/Controllers/TipoPlantacaoController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TerraNova.API/Controllers/WeatherForecastController.cs" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/Program.cs" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/Properties/launchSettings.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/TerraNova.API.csproj" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/TerraNova.http" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TerraNova.API/WeatherForecast.cs" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/appsettings.Development.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.API/appsettings.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/TerraNova.Application/DTOs/AlertaAgricolaRequest.cs" afterDir="false" />

@@ -13,8 +13,8 @@ using TerraNova.Infrastructure.Persistence;
 namespace TerraNova.Infrastructure.Migrations
 {
     [DbContext(typeof(TerraNovaContext))]
-    [Migration("20260606232557_AddSpatialLocalizacao")]
-    partial class AddSpatialLocalizacao
+    [Migration("20260607003302_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
