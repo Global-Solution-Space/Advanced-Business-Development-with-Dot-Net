@@ -1,6 +1,7 @@
-﻿using TerraNova.Application.DTOs;
+using TerraNova.Application.DTOs;
 using TerraNova.Application.Repositories;
 using TerraNova.Application.Services.Interfaces;
+using TerraNova.Domain.Entities;
 
 namespace TerraNova.Application.Services.Implementations;
 
@@ -27,6 +28,16 @@ public sealed class ProdutorService(IProdutorRepository produtorRepository) : IP
             throw new InvalidOperationException("Já existe um produtor cadastrado com este e-mail.");
  
         var produtor = request.ToDomain();
+
+        // Extrai DDD e Número da string limpa enviada no request
+        var telefoneLimpo = new string(request.TelefoneContato.Where(char.IsDigit).ToArray());
+        var ddd = telefoneLimpo.Substring(0, 2);
+        var numero = telefoneLimpo.Substring(2);
+
+        // Cria a entidade Telefone e associa ao Produtor
+        var telefoneDetalhado = new Telefone(ddd, numero, produtor.Id);
+        produtor.AtribuirTelefone(telefoneDetalhado);
+
         produtorRepository.Add(produtor);
         return ProdutorResponse.FromDomain(produtor);
     }

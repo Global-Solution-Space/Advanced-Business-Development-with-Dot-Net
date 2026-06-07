@@ -12,7 +12,7 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
  
     private const string PropriedadeNome = "Nome";
  
-    public IReadOnlyList<T> GetAll() =>
+    public virtual IReadOnlyList<T> GetAll() =>
         _set.AsNoTracking().OrderBy(e => e.Id).ToList();
  
     public virtual T? GetById(Guid id) =>

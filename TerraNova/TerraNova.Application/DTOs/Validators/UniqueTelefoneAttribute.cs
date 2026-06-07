@@ -10,14 +10,18 @@ public sealed class UniqueTelefoneAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        var produtorRepo = (IProdutorRepository?)validationContext.GetService(typeof(IProdutorRepository));
         var telefoneRepo = (IRepository<Telefone>?)validationContext.GetService(typeof(IRepository<Telefone>));
 
-        if (value is string telefone)
+        if (value is string telefoneLimpoStr)
         {
-            // Validando a propriedade de ProdutorRequest.TelefoneContato
-            if (produtorRepo != null && produtorRepo.GetAll().Any(p => p.TelefoneContato == telefone))
-                return new ValidationResult("Este telefone principal já está cadastrado em outro produtor.");
+            var telefoneFiltro = new string(telefoneLimpoStr.Where(char.IsDigit).ToArray());
+            if (telefoneFiltro.Length is 10 or 11)
+            {
+                var ddd = telefoneFiltro.Substring(0, 2);
+                var num = telefoneFiltro.Substring(2);
+                if (telefoneRepo != null && telefoneRepo.GetAll().Any(t => t.Ddd == ddd && t.Numero == num))
+                    return new ValidationResult("Este telefone principal já está cadastrado em outro produtor.");
+            }
         }
         else if (value is TelefoneRequest request)
         {

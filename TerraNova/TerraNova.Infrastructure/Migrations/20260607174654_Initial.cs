@@ -31,8 +31,7 @@ namespace TerraNova.Infrastructure.Migrations
                     id_produtor = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     nome = table.Column<string>(type: "NVARCHAR2(30)", maxLength: 30, nullable: false),
                     email = table.Column<string>(type: "NVARCHAR2(30)", maxLength: 30, nullable: false),
-                    senha = table.Column<string>(type: "NVARCHAR2(30)", maxLength: 30, nullable: false),
-                    telefone = table.Column<string>(type: "NVARCHAR2(11)", maxLength: 11, nullable: false)
+                    senha = table.Column<string>(type: "NVARCHAR2(30)", maxLength: 30, nullable: false)
                 },
                 constraints: table =>
                 {

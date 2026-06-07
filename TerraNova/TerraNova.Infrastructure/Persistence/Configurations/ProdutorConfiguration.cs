@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TerraNova.Domain.Entities;
 
@@ -27,12 +27,6 @@ public sealed class ProdutorConfiguration : IEntityTypeConfiguration<Produtor>
         builder.Property(p => p.Senha)
             .HasColumnName("senha")
             .HasMaxLength(30)
-            .IsRequired();
- 
-        // Coluna telefone embutida na tabela produtor (VARCHAR2(11))
-        builder.Property(p => p.TelefoneContato)
-            .HasColumnName("telefone")
-            .HasMaxLength(11)
             .IsRequired();
  
         // Navegação inversa para o Telefone detalhado (1:1, FK no lado Telefone)

@@ -13,7 +13,7 @@ using TerraNova.Infrastructure.Persistence;
 namespace TerraNova.Infrastructure.Migrations
 {
     [DbContext(typeof(TerraNovaContext))]
-    [Migration("20260607170215_Initial")]
+    [Migration("20260607174654_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -144,12 +144,6 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("NVARCHAR2(30)")
                         .HasColumnName("senha");
-
-                    b.Property<string>("TelefoneContato")
-                        .IsRequired()
-                        .HasMaxLength(11)
-                        .HasColumnType("NVARCHAR2(11)")
-                        .HasColumnName("telefone");
 
                     b.HasKey("Id");
 

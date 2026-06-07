@@ -142,12 +142,6 @@ namespace TerraNova.Infrastructure.Migrations
                         .HasColumnType("NVARCHAR2(30)")
                         .HasColumnName("senha");
 
-                    b.Property<string>("TelefoneContato")
-                        .IsRequired()
-                        .HasMaxLength(11)
-                        .HasColumnType("NVARCHAR2(11)")
-                        .HasColumnName("telefone");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
