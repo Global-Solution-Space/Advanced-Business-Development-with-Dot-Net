@@ -1,4 +1,4 @@
-﻿using TerraNova.Application.DTOs;
+using TerraNova.Application.DTOs;
 using TerraNova.Application.Repositories;
 using TerraNova.Application.Services.Interfaces;
 using TerraNova.Domain.Entities;
@@ -33,8 +33,13 @@ public sealed class TalhaoService(
         if (!tipoPlantacaoRepository.ExistsById(request.TipoPlantacaoId))
             throw new InvalidOperationException("Tipo de plantação não encontrado.");
  
-        if (!propriedadeRepository.ExistsById(request.PropriedadeId))
-            throw new InvalidOperationException("Propriedade não encontrada.");
+        var propriedade = propriedadeRepository.GetById(request.PropriedadeId)
+            ?? throw new InvalidOperationException("Propriedade não encontrada.");
+
+        var talhoesExistentes = talhaoRepository.GetByPropriedadeId(request.PropriedadeId);
+        var areaExistente = talhoesExistentes.Sum(t => t.VolumArea);
+        if (areaExistente + request.VolumArea > propriedade.TamanhoTotal)
+            throw new InvalidOperationException("A soma das áreas dos talhões não pode exceder o tamanho total da propriedade.");
  
         if (!localizacaoRepository.ExistsById(request.LocalizacaoId))
             throw new InvalidOperationException("Localização não encontrada.");

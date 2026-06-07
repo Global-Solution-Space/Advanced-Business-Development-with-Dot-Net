@@ -32,10 +32,10 @@ public class ReqApiController(IReqApiService reqApiService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ReqApiResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult Create([FromBody] ReqApiRequest request)
+    public async Task<IActionResult> Create([FromBody] ReqApiRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var created = reqApiService.Create(request);
+        var created = await reqApiService.CreateAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 

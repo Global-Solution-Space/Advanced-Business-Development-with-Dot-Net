@@ -3,11 +3,17 @@ using TerraNova.Domain.Entities;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 
+using TerraNova.Application.DTOs.Validators;
+
 namespace TerraNova.Application.DTOs;
  
+[BrasilCoordenadas]
 public record LocalizacaoRequest(
-    [Range(-90.0, 90.0,   ErrorMessage = "Latitude deve estar entre -90 e 90.")]   decimal Latitude,
-    [Range(-180.0, 180.0, ErrorMessage = "Longitude deve estar entre -180 e 180.")] decimal Longitude)
+    [Range(-90.0, 90.0,   ErrorMessage = "Latitude deve estar entre -90 e 90.")]   
+    decimal Latitude,
+    [Range(-180.0, 180.0, ErrorMessage = "Longitude deve estar entre -180 e 180.")] 
+    decimal Longitude
+) 
 {
     public Localizacao ToDomain() 
     {

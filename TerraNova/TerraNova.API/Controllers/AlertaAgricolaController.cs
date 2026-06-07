@@ -52,6 +52,21 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         }
     }
 
+    [HttpPatch("{id:guid}/reabrir")]
+    [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult Reabrir(Guid id)
+    {
+        try
+        {
+            return Ok(alertaService.Reabrir(id));
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
+    }
+
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

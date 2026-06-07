@@ -15,7 +15,7 @@ public interface IReqApiService
     /// Cria a requisição, chama a API externa correspondente ao TipoParam
     /// e persiste os dados retornados como DadoTemporal.
     /// </summary>
-    ReqApiResponse Create(ReqApiRequest request);
+    Task<ReqApiResponse> CreateAsync(ReqApiRequest request);
  
     bool Delete(Guid id);
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TerraNova.Application.Repositories;
 using TerraNova.Domain.Common;
 
@@ -13,7 +13,7 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
     private const string PropriedadeNome = "Nome";
  
     public IReadOnlyList<T> GetAll() =>
-        _set.OrderBy(e => e.Id).ToList();
+        _set.AsNoTracking().OrderBy(e => e.Id).ToList();
  
     public virtual T? GetById(Guid id) =>
         _set.Find(id);
@@ -53,7 +53,7 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
         ValidarPropriedadeNome();
  
         var normalizado = valor.Trim().ToLowerInvariant();
-        return _set.Any(e => EF.Property<string>(e, PropriedadeNome).ToLower() == normalizado);
+        return _set.AsNoTracking().Any(e => EF.Property<string>(e, PropriedadeNome).ToLower() == normalizado);
     }
  
     private void ValidarPropriedadeNome()

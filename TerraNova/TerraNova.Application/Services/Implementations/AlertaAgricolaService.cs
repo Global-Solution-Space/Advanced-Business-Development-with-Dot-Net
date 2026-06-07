@@ -1,4 +1,4 @@
-﻿using TerraNova.Application.DTOs;
+using TerraNova.Application.DTOs;
 using TerraNova.Application.Repositories;
 using TerraNova.Application.Services.Interfaces;
 using TerraNova.Domain.Enums;
@@ -43,6 +43,16 @@ public sealed class AlertaAgricolaService(
                      ?? throw new InvalidOperationException("Alerta agrícola não encontrado.");
 
         alerta.Resolver();
+        alertaRepository.Update(alerta);
+        return AlertaAgricolaResponse.FromDomain(alerta);
+    }
+
+    public AlertaAgricolaResponse Reabrir(Guid id)
+    {
+        var alerta = alertaRepository.GetById(id)
+                     ?? throw new InvalidOperationException("Alerta agrícola não encontrado.");
+
+        alerta.Reabrir();
         alertaRepository.Update(alerta);
         return AlertaAgricolaResponse.FromDomain(alerta);
     }

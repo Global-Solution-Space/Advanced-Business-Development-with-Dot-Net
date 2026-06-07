@@ -25,31 +25,31 @@ public sealed class ReqApiService(
  
     public IReadOnlyList<ReqApiResponse> GetAll() =>
         reqApiRepository.GetAll()
-            .Select(r => ReqApiResponse.FromDomain(r, r.DadosTemporais.Count))
+            .Select(r => ReqApiResponse.FromDomain(r, reqApiRepository.CountDadosByReqApiId(r.Id)))
             .ToList();
  
     public ReqApiResponse? GetById(Guid id)
     {
         var r = reqApiRepository.GetById(id);
-        return r is null ? null : ReqApiResponse.FromDomain(r, r.DadosTemporais.Count);
+        return r is null ? null : ReqApiResponse.FromDomain(r, reqApiRepository.CountDadosByReqApiId(r.Id));
     }
  
     public IReadOnlyList<ReqApiResponse> GetByTipoParam(TipoParamReqApi tipoParam) =>
         reqApiRepository.GetByTipoParam(tipoParam)
-            .Select(r => ReqApiResponse.FromDomain(r, r.DadosTemporais.Count))
+            .Select(r => ReqApiResponse.FromDomain(r, reqApiRepository.CountDadosByReqApiId(r.Id)))
             .ToList();
  
     public IReadOnlyList<ReqApiResponse> GetByTipoApiId(Guid tipoApiId) =>
         reqApiRepository.GetByTipoApiId(tipoApiId)
-            .Select(r => ReqApiResponse.FromDomain(r, r.DadosTemporais.Count))
+            .Select(r => ReqApiResponse.FromDomain(r, reqApiRepository.CountDadosByReqApiId(r.Id)))
             .ToList();
  
     public IReadOnlyList<ReqApiResponse> GetByTalhaoId(Guid talhaoId) =>
         reqApiRepository.GetByTalhaoId(talhaoId)
-            .Select(r => ReqApiResponse.FromDomain(r, r.DadosTemporais.Count))
+            .Select(r => ReqApiResponse.FromDomain(r, reqApiRepository.CountDadosByReqApiId(r.Id)))
             .ToList();
  
-    public ReqApiResponse Create(ReqApiRequest request)
+    public async Task<ReqApiResponse> CreateAsync(ReqApiRequest request)
     {
         if (!tipoApiRepository.ExistsById(request.TipoApiId))
             throw new InvalidOperationException("Tipo de API não encontrado.");
@@ -65,8 +65,8 @@ public sealed class ReqApiService(
  
         var dados = request.TipoParam switch
         {
-            TipoParamReqApi.Nvdi        => BuscarDadosSatVeg(reqApi.Id, talhao).GetAwaiter().GetResult(),
-            TipoParamReqApi.Prectotcorr => BuscarDadosNasaPower(reqApi.Id, talhao).GetAwaiter().GetResult(),
+            TipoParamReqApi.Nvdi        => await BuscarDadosSatVeg(reqApi.Id, talhao),
+            TipoParamReqApi.Prectotcorr => await BuscarDadosNasaPower(reqApi.Id, talhao),
             _                           => []
         };
  
@@ -174,4 +174,3 @@ public sealed class ReqApiService(
         return resultado;
     }
 }
- 

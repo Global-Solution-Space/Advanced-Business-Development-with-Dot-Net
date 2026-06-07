@@ -24,4 +24,7 @@ public sealed class ReqApiRepository(TerraNovaContext context)
         Context.ReqApis.AsNoTracking()
             .Where(r => r.DadosTemporais.Any(d => d.TalhaoId == talhaoId))
             .ToList();
+
+    public int CountDadosByReqApiId(Guid reqApiId) =>
+        Context.DadosTemporais.Count(d => d.ReqApiId == reqApiId);
 }
