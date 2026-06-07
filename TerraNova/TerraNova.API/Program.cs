@@ -1,5 +1,6 @@
 using TerraNova.API.Exceptions;
 using TerraNova.API.Extensions;
+using TerraNova.API.Swagger;
 using Microsoft.OpenApi;
 
 namespace TerraNova.API;
@@ -43,6 +44,8 @@ public class Program
             var appXmlPath = Path.Combine(AppContext.BaseDirectory, appXml);
             if (File.Exists(appXmlPath))
                 options.IncludeXmlComments(appXmlPath);
+
+            options.DocumentFilter<SwaggerTagDescriptionsDocumentFilter>();
         });
 
         var app = builder.Build();

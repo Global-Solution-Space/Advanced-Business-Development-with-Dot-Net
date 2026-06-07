@@ -4,13 +4,14 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>Talhões. Subdivisão de uma Propriedade; origem dos dados SatVeg e NASA POWER.</summary>
+/// <summary>Gerenciamento de talhões e suas plantações.</summary>
+[Tags("Talhão")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
 public class TalhaoController(ITalhaoService talhaoService) : ControllerBase
 {
-    /// <summary>Lista todos os talhões cadastrados.</summary>
+    /// <summary>Lista todos os talhões</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<TalhaoResponse>), StatusCodes.Status200OK)]
     public IActionResult GetAll() => Ok(talhaoService.GetAll());
@@ -25,13 +26,13 @@ public class TalhaoController(ITalhaoService talhaoService) : ControllerBase
         return t is null ? NotFound() : Ok(t);
     }
  
-    /// <summary>Lista todos os talhões de uma propriedade específica.</summary>
+    /// <summary>Buscar Talhões por Propriedade</summary>
     [HttpGet("by-propriedade/{propriedadeId:guid}")]
     [ProducesResponseType(typeof(IReadOnlyList<TalhaoResponse>), StatusCodes.Status200OK)]
     public IActionResult GetByPropriedade(Guid propriedadeId) =>
         Ok(talhaoService.GetByPropriedadeId(propriedadeId));
  
-    /// <summary>Lista todos os talhões de um tipo de plantação específico.</summary>
+    /// <summary>Buscar Talhões por Tipo de Plantação</summary>
     [HttpGet("by-tipo-plantacao/{tipoPlantacaoId:guid}")]
     [ProducesResponseType(typeof(IReadOnlyList<TalhaoResponse>), StatusCodes.Status200OK)]
     public IActionResult GetByTipoPlantacao(Guid tipoPlantacaoId) =>

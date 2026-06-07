@@ -4,16 +4,14 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>
-/// Alertas agrícolas gerados automaticamente ou manualmente para um talhão.
-/// Permite criar, listar, resolver e reabrir alertas.
-/// </summary>
+/// <summary>Alertas baseados na análise cruzada dos dados.</summary>
+[Tags("Alerta Agrícola")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
 public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : ControllerBase
 {
-    /// <summary>Lista todos os alertas agrícolas cadastrados.</summary>
+    /// <summary>Lista todos os alertas agrícolas</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<AlertaAgricolaResponse>), StatusCodes.Status200OK)]
     public IActionResult GetAll() => Ok(alertaService.GetAll());
@@ -45,7 +43,7 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    /// <summary>Marca um alerta como resolvido.</summary>
+    /// <summary>Resolver Alerta</summary>
     [HttpPatch("{id:guid}/resolver")]
     [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -61,7 +59,7 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         }
     }
 
-    /// <summary>Reabre um alerta que havia sido resolvido.</summary>
+    /// <summary>Reabrir Alerta</summary>
     [HttpPatch("{id:guid}/reabrir")]
     [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

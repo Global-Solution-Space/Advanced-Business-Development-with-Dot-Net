@@ -4,13 +4,14 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>Coordenadas geográficas. Pré-requisito para Propriedade e Talhão.</summary>
+/// <summary>Gerenciamento de geolocalizações.</summary>
+[Tags("Localização")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
 public class LocalizacaoController(ILocalizacaoService localizacaoService) : ControllerBase
 {
-    /// <summary>Lista todas as localizações cadastradas.</summary>
+    /// <summary>Lista todas as localizações</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<LocalizacaoResponse>), StatusCodes.Status200OK)]
     public IActionResult GetAll() => Ok(localizacaoService.GetAll());

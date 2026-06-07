@@ -4,7 +4,8 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>Telefone detalhado (DDD + número) vinculado a um Produtor. Relação 1:1.</summary>
+/// <summary>Gerenciamento de contatos telefônicos.</summary>
+[Tags("Telefone")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]

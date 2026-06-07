@@ -4,13 +4,14 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>Produtores rurais. Senha nunca é exposta nas respostas.</summary>
+/// <summary>Gerenciamento de produtores rurais.</summary>
+[Tags("Produtor")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
 public class ProdutorController(IProdutorService produtorService) : ControllerBase
 {
-    /// <summary>Lista todos os produtores cadastrados.</summary>
+    /// <summary>Lista todos os produtores</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<ProdutorResponse>), StatusCodes.Status200OK)]
     public IActionResult GetAll() => Ok(produtorService.GetAll());

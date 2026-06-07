@@ -4,16 +4,14 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>
-/// Dados temporais (séries históricas) de NDVI e precipitação.
-/// Cada registro representa uma leitura de um sensor externo para um talhão em uma data específica.
-/// </summary>
+/// <summary>Séries temporais unificadas de dados climáticos e vegetativos.</summary>
+[Tags("Dado Temporal")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
 public class DadoTemporalController(IDadoTemporalService dadoTemporalService) : ControllerBase
 {
-    /// <summary>Lista todos os dados temporais cadastrados.</summary>
+    /// <summary>Lista todos os dados temporais</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<DadoTemporalResponse>), StatusCodes.Status200OK)]
     public IActionResult GetAll() => Ok(dadoTemporalService.GetAll());
@@ -28,7 +26,7 @@ public class DadoTemporalController(IDadoTemporalService dadoTemporalService) : 
         return d is null ? NotFound() : Ok(d);
     }
 
-    /// <summary>Lista todos os dados temporais de um talhão, ordenados por data de leitura.</summary>
+    /// <summary>Buscar por Talhão</summary>
     [HttpGet("talhao/{talhaoId:guid}")]
     [ProducesResponseType(typeof(IReadOnlyList<DadoTemporalResponse>), StatusCodes.Status200OK)]
     public IActionResult GetByTalhaoId(Guid talhaoId) =>

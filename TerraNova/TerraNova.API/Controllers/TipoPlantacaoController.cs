@@ -4,7 +4,8 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>Tipos de plantação (tabela de domínio). Ex.: Soja, Milho, Café.</summary>
+/// <summary>Gerenciamento dos tipos de culturas.</summary>
+[Tags("Tipo de Plantação")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]

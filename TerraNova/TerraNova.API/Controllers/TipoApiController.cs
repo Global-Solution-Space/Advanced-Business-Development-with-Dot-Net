@@ -4,7 +4,8 @@ using TerraNova.Application.Services.Interfaces;
 
 namespace TerraNova.API.Controllers;
 
-/// <summary>Tipos de API externa (NASAPOWER, SATVEG, etc).</summary>
+/// <summary>Gerenciamento dos tipos de APIs externas. NASAPOWER/SATVEG)</summary>
+[Tags("Tipo de API")]
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
