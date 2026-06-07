@@ -5,6 +5,10 @@ using TerraNova.Application.DTOs.Validators;
 
 namespace TerraNova.Application.DTOs;
 
+/// <summary>Dados para cadastrar um telefone detalhado vinculado a um produtor.</summary>
+/// <param name="Ddd">DDD do telefone, com dois dígitos.</param>
+/// <param name="Numero">Número de telefone, com oito ou nove dígitos.</param>
+/// <param name="ProdutorId">Identificador do produtor dono do telefone.</param>
 [UniqueTelefone]
 public record TelefoneRequest(
     [Required][StringLength(2, MinimumLength = 2, ErrorMessage = "O DDD deve ter exatamente 2 dígitos.")] string Ddd,

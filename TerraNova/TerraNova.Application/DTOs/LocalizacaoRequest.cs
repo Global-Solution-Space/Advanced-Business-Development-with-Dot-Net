@@ -7,6 +7,9 @@ using TerraNova.Application.DTOs.Validators;
 
 namespace TerraNova.Application.DTOs;
  
+/// <summary>Coordenadas geográficas usadas para cadastrar uma localização no Brasil.</summary>
+/// <param name="Latitude">Latitude em graus decimais.</param>
+/// <param name="Longitude">Longitude em graus decimais.</param>
 [BrasilCoordenadas]
 public record LocalizacaoRequest(
     [Range(-90.0, 90.0,   ErrorMessage = "Latitude deve estar entre -90 e 90.")]   

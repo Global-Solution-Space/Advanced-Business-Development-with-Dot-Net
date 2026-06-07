@@ -3,6 +3,11 @@ using TerraNova.Domain.Entities;
 
 namespace TerraNova.Application.DTOs;
 
+/// <summary>Dados para cadastrar uma propriedade rural.</summary>
+/// <param name="Nome">Nome da propriedade.</param>
+/// <param name="TamanhoTotal">Área total da propriedade.</param>
+/// <param name="ProdutorId">Identificador do produtor proprietário.</param>
+/// <param name="LocalizacaoId">Identificador da localização exclusiva da propriedade.</param>
 public record PropriedadeRequest(
     [Required][StringLength(30, MinimumLength = 2)] string  Nome,
     [Range(0.01, double.MaxValue, ErrorMessage = "O tamanho total deve ser maior que zero.")] decimal TamanhoTotal,
