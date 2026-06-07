@@ -43,6 +43,24 @@ public class AlertaAgricolaController(IAlertaAgricolaService alertaService) : Co
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
+    /// <summary>Atualiza um alerta agrícola pelo ID.</summary>
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult Update(Guid id, [FromBody] AlertaAgricolaRequest request)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            return Ok(alertaService.Update(id, request));
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
+    }
+
     /// <summary>Resolver Alerta</summary>
     [HttpPatch("{id:guid}/resolver")]
     [ProducesResponseType(typeof(AlertaAgricolaResponse), StatusCodes.Status200OK)]

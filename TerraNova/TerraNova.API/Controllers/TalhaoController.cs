@@ -49,6 +49,24 @@ public class TalhaoController(ITalhaoService talhaoService) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
  
+    /// <summary>Atualiza um talhão pelo ID.</summary>
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(TalhaoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult Update(Guid id, [FromBody] TalhaoRequest request)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            return Ok(talhaoService.Update(id, request));
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
+    }
+
     /// <summary>Remove um talhão pelo ID.</summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

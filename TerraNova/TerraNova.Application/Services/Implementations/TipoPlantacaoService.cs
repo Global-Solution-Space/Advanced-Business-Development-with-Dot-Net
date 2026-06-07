@@ -9,19 +9,29 @@ public sealed class TipoPlantacaoService(IRepository<TipoPlantacao> tipoPlantaca
 {
     public IReadOnlyList<TipoPlantacaoResponse> GetAll() =>
         tipoPlantacaoRepository.GetAll().Select(TipoPlantacaoResponse.FromDomain).ToList();
- 
+
     public TipoPlantacaoResponse? GetById(Guid id)
     {
         var t = tipoPlantacaoRepository.GetById(id);
         return t is null ? null : TipoPlantacaoResponse.FromDomain(t);
     }
- 
+
     public TipoPlantacaoResponse Create(TipoPlantacaoRequest request)
     {
         var tipo = request.ToDomain();
         tipoPlantacaoRepository.Add(tipo);
         return TipoPlantacaoResponse.FromDomain(tipo);
     }
- 
+
+    public TipoPlantacaoResponse Update(Guid id, TipoPlantacaoRequest request)
+    {
+        _ = tipoPlantacaoRepository.GetById(id)
+            ?? throw new InvalidOperationException("Tipo de plantação não encontrado.");
+
+        var entity = request.ToDomain();
+        tipoPlantacaoRepository.Update(id, entity);
+        return TipoPlantacaoResponse.FromDomain(entity);
+    }
+
     public bool Delete(Guid id) => tipoPlantacaoRepository.Delete(id);
 }

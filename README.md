@@ -181,6 +181,7 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | GET | `/api/produtor/{id}` | Buscar produtor por ID |
 | GET | `/api/produtor/by-email` | Buscar produtor pelo seu e-mail |
 | POST | `/api/produtor` | Cadastrar novo produtor |
+| PUT | `/api/produtor/{id}` | Atualizar dados do produtor (nome, e-mail, senha) |
 | DELETE | `/api/produtor/{id}` | Remover um produtor |
 
 ### Propriedades
@@ -190,6 +191,7 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | GET | `/api/propriedade/{id}` | Buscar propriedade por ID |
 | GET | `/api/propriedade/by-produtor/{produtorId}` | Listar propriedades vinculadas a um produtor |
 | POST | `/api/propriedade` | Cadastrar propriedade vinculando localidade espacial |
+| PUT | `/api/propriedade/{id}` | Atualizar propriedade (nome, tamanho, produtor, localização) |
 | DELETE | `/api/propriedade/{id}` | Remover uma propriedade |
 
 ### Gestão Agrícola (Talhões & Plantações)
@@ -200,10 +202,12 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | GET | `/api/talhao/by-propriedade/{propriedadeId}` | Listar talhões vinculados a uma propriedade |
 | GET | `/api/talhao/by-tipo-plantacao/{tipoPlantacaoId}` | Listar talhões filtrados por tipo de cultura agrícola |
 | POST | `/api/talhao` | Cadastrar novo talhão e cultura (`TipoPlantacao`) |
+| PUT | `/api/talhao/{id}` | Atualizar talhão (nome, área, tipo de plantação, propriedade, localização) |
 | DELETE | `/api/talhao/{id}` | Remover um talhão |
 | GET | `/api/tipoplantacao` | Listar tipos de culturas agrícolas disponíveis |
 | GET | `/api/tipoplantacao/{id}` | Buscar cultura por ID |
 | POST | `/api/tipoplantacao` | Cadastrar nova cultura agrícola |
+| PUT | `/api/tipoplantacao/{id}` | Atualizar nome da cultura agrícola |
 | DELETE | `/api/tipoplantacao/{id}` | Remover uma cultura |
 
 ### Dados Espaciais & Localização
@@ -212,6 +216,7 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | GET | `/api/localizacao` | Listar entidades espaciais e coordenadas georreferenciadas |
 | GET | `/api/localizacao/{id}` | Buscar uma localização espacial por ID |
 | POST | `/api/localizacao` | Cadastrar nova coordenada (WGS 84 Point) |
+| PUT | `/api/localizacao/{id}` | Atualizar coordenadas geográficas (latitude/longitude) |
 | DELETE | `/api/localizacao/{id}` | Remover um registro espacial |
 
 ### Comunicação (Telefones)
@@ -221,6 +226,7 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | GET | `/api/telefone/{id}` | Buscar telefone por ID |
 | GET | `/api/telefone/by-produtor/{produtorId}` | Buscar o telefone associado a um produtor específico |
 | POST | `/api/telefone` | Cadastrar novo contato telefônico |
+| PUT | `/api/telefone/{id}` | Atualizar DDD e número do telefone |
 | DELETE | `/api/telefone/{id}` | Remover registro de telefone |
 
 ### Requisições de API Externa (Integrações)
@@ -275,6 +281,7 @@ Sistema de alertas reativos com **deduplicação automática**: não cria alerta
 | GET | `/api/alertaagricola/{id}` | Busca alerta por ID |
 | GET | `/api/alertaagricola/talhao/{talhaoId}` | Lista alertas de um talhão |
 | POST | `/api/alertaagricola` | Cria alerta manual |
+| PUT | `/api/alertaagricola/{id}` | Atualiza alerta (título, descrição, nível) |
 | PATCH | `/api/alertaagricola/{id}/resolver` | Marca alerta como resolvido |
 | PATCH | `/api/alertaagricola/{id}/reabrir` | Reabre alerta resolvido |
 | DELETE | `/api/alertaagricola/{id}` | Remove alerta |

@@ -18,7 +18,7 @@ public sealed class PropriedadeService(
         var p = propriedadeRepository.GetById(id);
         return p is null ? null : PropriedadeResponse.FromDomain(p);
     }
- 
+
     // Filtro feito pelo Oracle via WHERE — não carrega tudo em memória
     public IReadOnlyList<PropriedadeResponse> GetByProdutorId(Guid produtorId) =>
         propriedadeRepository.GetByProdutorId(produtorId)
@@ -32,15 +32,35 @@ public sealed class PropriedadeService(
 
         if (!localizacaoRepository.ExistsById(request.LocalizacaoId))
             throw new InvalidOperationException("Localização não encontrada.");
- 
+
         // COUNT() direto no banco — evita GetAll em memória
         if (propriedadeRepository.ExistsByLocalizacaoId(request.LocalizacaoId))
             throw new InvalidOperationException("Esta localização já está associada a outra propriedade.");
- 
+
         var propriedade = request.ToDomain();
         propriedadeRepository.Add(propriedade);
         return PropriedadeResponse.FromDomain(propriedade);
     }
- 
+
+    public PropriedadeResponse Update(Guid id, PropriedadeRequest request)
+    {
+        var existing = propriedadeRepository.GetById(id)
+                       ?? throw new InvalidOperationException("Propriedade não encontrada.");
+
+        if (!produtorRepository.ExistsById(request.ProdutorId))
+            throw new InvalidOperationException("Produtor não encontrado.");
+
+        if (!localizacaoRepository.ExistsById(request.LocalizacaoId))
+            throw new InvalidOperationException("Localização não encontrada.");
+
+        if (propriedadeRepository.ExistsByLocalizacaoId(request.LocalizacaoId)
+            && existing.LocalizacaoId != request.LocalizacaoId)
+            throw new InvalidOperationException("Esta localização já está associada a outra propriedade.");
+
+        var entity = request.ToDomain();
+        propriedadeRepository.Update(id, entity);
+        return PropriedadeResponse.FromDomain(entity);
+    }
+
     public bool Delete(Guid id) => propriedadeRepository.Delete(id);
 }

@@ -34,6 +34,17 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
         return entity;
     }
  
+    public T Update(Guid id, T entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        var existing = _set.Find(id)
+            ?? throw new InvalidOperationException($"Entidade do tipo '{typeof(T).Name}' com Id {id} não encontrada.");
+        Context.Entry(existing).CurrentValues.SetValues(entity);
+        Context.Entry(existing).Property(e => e.Id).CurrentValue = id;
+        Context.SaveChanges();
+        return existing;
+    }
+ 
     public bool Delete(Guid id)
     {
         var entity = GetById(id);

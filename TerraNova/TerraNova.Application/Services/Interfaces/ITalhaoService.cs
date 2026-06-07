@@ -9,5 +9,6 @@ public interface ITalhaoService
     IReadOnlyList<TalhaoResponse> GetByPropriedadeId(Guid propriedadeId);
     IReadOnlyList<TalhaoResponse> GetByTipoPlantacaoId(Guid tipoPlantacaoId);
     TalhaoResponse Create(TalhaoRequest request);
+    TalhaoResponse Update(Guid id, TalhaoRequest request);
     bool Delete(Guid id);
 }

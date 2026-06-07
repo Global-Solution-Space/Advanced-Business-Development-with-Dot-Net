@@ -64,6 +64,4 @@ public sealed class AlertaAgricola : BaseEntity
 
         Resolvido = false;
     }
- 
-    public void AtualizarNivel(NivelAlerta novoNivel) => NivelAlerta = novoNivel;
 }

@@ -20,45 +20,30 @@ public sealed class Produtor : BaseEntity
  
     public Produtor(string nome, string email, string senha)
     {
-        AtualizarNome(nome);
-        AtualizarEmail(email);
-        AtualizarSenha(senha);
-    }
- 
-    public void AtualizarNome(string nome)
-    {
         if (string.IsNullOrWhiteSpace(nome))
             throw new DomainException("O nome não pode ser vazio.");
- 
+
         nome = nome.Trim();
- 
+
         if (nome.Length > 30)
             throw new DomainException("O nome deve ter no máximo 30 caracteres.");
- 
-        Nome = nome;
-    }
- 
-    public void AtualizarEmail(string email)
-    {
+
         if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
             throw new DomainException("O e-mail informado é inválido.");
- 
+
         email = email.Trim();
- 
+
         if (email.Length > 30)
             throw new DomainException("O e-mail deve ter no máximo 30 caracteres.");
- 
-        Email = email;
-    }
- 
-    public void AtualizarSenha(string senha)
-    {
+
         if (string.IsNullOrWhiteSpace(senha) || senha.Length < 6)
             throw new DomainException("A senha deve ter pelo menos 6 caracteres.");
- 
+
         if (senha.Length > 30)
             throw new DomainException("A senha deve ter no máximo 30 caracteres.");
- 
+
+        Nome  = nome;
+        Email = email;
         Senha = senha;
     }
 

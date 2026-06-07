@@ -8,5 +8,6 @@ public interface ITelefoneService
     TelefoneResponse? GetById(Guid id);
     TelefoneResponse? GetByProdutorId(Guid produtorId);
     TelefoneResponse Create(TelefoneRequest request);
+    TelefoneResponse Update(Guid id, TelefoneUpdateRequest request);
     bool Delete(Guid id);
 }

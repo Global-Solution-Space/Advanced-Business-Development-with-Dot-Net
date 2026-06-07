@@ -8,5 +8,6 @@ public interface IPropriedadeService
     PropriedadeResponse? GetById(Guid id);
     IReadOnlyList<PropriedadeResponse> GetByProdutorId(Guid produtorId);
     PropriedadeResponse Create(PropriedadeRequest request);
+    PropriedadeResponse Update(Guid id, PropriedadeRequest request);
     bool Delete(Guid id);
 }

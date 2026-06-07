@@ -7,5 +7,6 @@ public interface ITipoPlantacaoService
     IReadOnlyList<TipoPlantacaoResponse> GetAll();
     TipoPlantacaoResponse? GetById(Guid id);
     TipoPlantacaoResponse Create(TipoPlantacaoRequest request);
+    TipoPlantacaoResponse Update(Guid id, TipoPlantacaoRequest request);
     bool Delete(Guid id);
 }

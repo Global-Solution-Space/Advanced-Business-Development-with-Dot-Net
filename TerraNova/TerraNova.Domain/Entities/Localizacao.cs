@@ -23,12 +23,6 @@ public sealed class Localizacao : BaseEntity
         Coordenadas = coordenadas;
     }
  
-    public void Atualizar(Point coordenadas)
-    {
-        Validar(coordenadas);
-        Coordenadas = coordenadas;
-    }
- 
     private static void Validar(Point coord)
     {
         if (coord == null)

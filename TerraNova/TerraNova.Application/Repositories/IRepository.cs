@@ -9,6 +9,7 @@ public interface IRepository<T> where T : BaseEntity
     T? GetById(Guid id);
     T  Add(T entity);
     T  Update(T entity);
+    T  Update(Guid id, T entity);
     bool Delete(Guid id);
     bool ExistsById(Guid id);
  
