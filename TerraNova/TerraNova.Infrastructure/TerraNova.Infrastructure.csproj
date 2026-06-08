@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Terranova.Application\TerraNova.Application.csproj" />
+        <ProjectReference Include="..\TerraNova.Application\TerraNova.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>
