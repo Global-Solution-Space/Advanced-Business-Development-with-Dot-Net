@@ -7,7 +7,7 @@ namespace TerraNova.Application.Services.Implementations;
 
 public sealed class ProdutorService(
     IProdutorRepository produtorRepository,
-    IRepository<Telefone> telefoneRepository) : IProdutorService
+    ITelefoneRepository telefoneRepository) : IProdutorService
 {
     public IReadOnlyList<ProdutorResponse> GetAll() =>
         produtorRepository.GetAll().Select(ProdutorResponse.FromDomain).ToList();
@@ -33,6 +33,8 @@ public sealed class ProdutorService(
 
         // Extrai DDD e Número da string limpa enviada no request
         var (ddd, numero) = ExtrairTelefone(request.TelefoneContato);
+        if (telefoneRepository.ExistsByDddNumero(ddd, numero))
+            throw new InvalidOperationException("Este DDD e número já estão cadastrados.");
 
         // Cria a entidade Telefone e associa ao Produtor
         var telefoneDetalhado = new Telefone(ddd, numero, produtor.Id);
@@ -65,6 +67,9 @@ public sealed class ProdutorService(
     private Telefone AtualizarTelefoneContato(Guid produtorId, string telefoneContato, Guid? telefoneId)
     {
         var (ddd, numero) = ExtrairTelefone(telefoneContato);
+        if (telefoneRepository.ExistsByDddNumeroExceptProdutorId(ddd, numero, produtorId))
+            throw new InvalidOperationException("Este DDD e número já estão cadastrados para outro telefone.");
+
         var telefone = new Telefone(ddd, numero, produtorId);
 
         if (telefoneId.HasValue)

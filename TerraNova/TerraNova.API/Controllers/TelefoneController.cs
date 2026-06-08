@@ -55,14 +55,7 @@ public class TelefoneController(ITelefoneService telefoneService) : ControllerBa
     public IActionResult Update(Guid id, [FromBody] TelefoneRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        try
-        {
-            return Ok(telefoneService.Update(id, request));
-        }
-        catch (InvalidOperationException)
-        {
-            return NotFound();
-        }
+        return Ok(telefoneService.Update(id, request));
     }
 
     /// <summary>Remove um telefone pelo ID.</summary>

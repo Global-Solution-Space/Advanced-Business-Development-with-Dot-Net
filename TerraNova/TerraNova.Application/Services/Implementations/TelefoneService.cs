@@ -6,8 +6,8 @@ using TerraNova.Domain.Entities;
 namespace TerraNova.Application.Services.Implementations;
 
 public sealed class TelefoneService(
-    IRepository<Telefone> telefoneRepository,
-    IProdutorRepository   produtorRepository) : ITelefoneService
+    ITelefoneRepository telefoneRepository,
+    IProdutorRepository produtorRepository) : ITelefoneService
 {
     public IReadOnlyList<TelefoneResponse> GetAll() =>
         telefoneRepository.GetAll().Select(TelefoneResponse.FromDomain).ToList();
@@ -20,7 +20,7 @@ public sealed class TelefoneService(
 
     public TelefoneResponse? GetByProdutorId(Guid produtorId)
     {
-        var t = telefoneRepository.GetAll().FirstOrDefault(t => t.ProdutorId == produtorId);
+        var t = telefoneRepository.GetByProdutorId(produtorId);
         return t is null ? null : TelefoneResponse.FromDomain(t);
     }
 
@@ -29,9 +29,11 @@ public sealed class TelefoneService(
         if (!produtorRepository.ExistsById(request.ProdutorId))
             throw new InvalidOperationException("Produtor não encontrado.");
 
-        var jaExiste = telefoneRepository.GetAll().Any(t => t.ProdutorId == request.ProdutorId);
-        if (jaExiste)
+        if (telefoneRepository.ExistsByProdutorId(request.ProdutorId))
             throw new InvalidOperationException("Este produtor já possui um telefone detalhado cadastrado.");
+
+        if (telefoneRepository.ExistsByDddNumero(request.Ddd, request.Numero))
+            throw new InvalidOperationException("Este DDD e número já estão cadastrados.");
 
         var telefone = request.ToDomain();
         telefoneRepository.Add(telefone);
@@ -41,7 +43,10 @@ public sealed class TelefoneService(
     public TelefoneResponse Update(Guid id, TelefoneRequest request)
     {
         var existing = telefoneRepository.GetById(id)
-                       ?? throw new InvalidOperationException("Telefone não encontrado.");
+                       ?? throw new KeyNotFoundException("Telefone não encontrado.");
+
+        if (telefoneRepository.ExistsByDddNumeroExceptId(request.Ddd, request.Numero, id))
+            throw new InvalidOperationException("Este DDD e número já estão cadastrados para outro telefone.");
 
         var entity = new Telefone(request.Ddd, request.Numero, existing.ProdutorId);
         telefoneRepository.Update(id, entity);

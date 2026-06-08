@@ -140,6 +140,7 @@ Toda alteração de banco deve passar pelo fluxo:
 O projeto utiliza um pipeline duplo de validação:
 1. **Validação de Sintaxe e Limites (DTOs):** Os Requests (como `LocalizacaoRequest.cs`) utilizam anotações do tipo `[Range(-90.0, 90.0)]` e `[Required]`. Se violado, o ASP.NET Core automaticamente interrompe o fluxo e retorna um `400 Bad Request` sem nem encostar no serviço.
 2. **Validação de Negócio (Domain):** Entidades como `Localizacao` não têm *setters* abertos. Eles são inicializados por construtores blindados que jogam uma `DomainException` caso alguém tente cadastrar uma coordenada geograficamente impossível.
+3. **Unicidade de Contato:** O telefone do produtor é tratado como contato 1:1. O campo `telefoneContato` em `ProdutorRequest` cria ou atualiza o telefone principal, e a combinação `DDD + número` é bloqueada para duplicidade tanto no cadastro de produtor quanto em `POST/PUT /api/telefone`.
 
 ### Testes da API (Insomnia / Swagger)
 As rotas da API foram intensamente testadas. Graças à blindagem no DTO (`LocalizacaoRequest`), a nossa API recebe os campos JSON normais `latitude` e `longitude` enviados por clientes externos, e o nosso Mapper converte isso para um Ponto Geoespacial (`NetTopologySuite.Point`) transparente para o banco de dados, sem o consumidor (Frontend/Mobile) precisar saber WKT.
@@ -194,7 +195,7 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | PUT | `/api/propriedade/{id}` | Atualizar propriedade (nome, tamanho, produtor, localização) |
 | DELETE | `/api/propriedade/{id}` | Remover uma propriedade |
 
-### Gestão Agrícola (Talhões & Plantações)
+### Gestão Talhão
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | GET | `/api/talhao` | Listar talhões cadastrados e suas métricas |
@@ -204,11 +205,16 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | POST | `/api/talhao` | Cadastrar novo talhão e cultura (`TipoPlantacao`) |
 | PUT | `/api/talhao/{id}` | Atualizar talhão (nome, área, tipo de plantação, propriedade, localização) |
 | DELETE | `/api/talhao/{id}` | Remover um talhão |
-| GET | `/api/tipoplantacao` | Listar tipos de culturas agrícolas disponíveis |
-| GET | `/api/tipoplantacao/{id}` | Buscar cultura por ID |
-| POST | `/api/tipoplantacao` | Cadastrar nova cultura agrícola |
-| PUT | `/api/tipoplantacao/{id}` | Atualizar nome da cultura agrícola |
-| DELETE | `/api/tipoplantacao/{id}` | Remover uma cultura |
+
+## Gestão Tipos de Plantação
+
+| Método     | Rota                      | Descrição                             |
+| --------- | ------------------------- | -------------------------------------- |
+| `GET`     | `/api/tipoplantacao`      | Lista todos os tipos de plantação      |
+| `GET`     | `/api/tipoplantacao/{id}` | Busca tipo de plantação por ID         |
+| `POST`    | `/api/tipoplantacao`      | Cria um tipo de plantação              |
+| `PUT`     | `/api/tipoplantacao/{id}` | Atualiza um tipo de plantação          |
+| `DELETE`  | `/api/tipoplantacao/{id}` | Remove um tipo de plantação            |
 
 ### Dados Espaciais & Localização
 | Método | Rota | Descrição |
@@ -225,9 +231,11 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | GET | `/api/telefone` | Listar todos os telefones de produtores |
 | GET | `/api/telefone/{id}` | Buscar telefone por ID |
 | GET | `/api/telefone/by-produtor/{produtorId}` | Buscar o telefone associado a um produtor específico |
-| POST | `/api/telefone` | Cadastrar novo contato telefônico |
-| PUT | `/api/telefone/{id}` | Atualizar DDD e número do telefone |
+| POST | `/api/telefone` | Cadastrar novo contato telefônico, desde que o produtor ainda não possua telefone e o `DDD + número` não exista |
+| PUT | `/api/telefone/{id}` | Atualizar DDD e número do telefone, mantendo o vínculo com o produtor e rejeitando `DDD + número` já usado por outro telefone |
 | DELETE | `/api/telefone/{id}` | Remover registro de telefone |
+
+> Também é possível manter o telefone principal pelo fluxo de produtor: `POST /api/produtor` e `PUT /api/produtor/{id}` recebem `telefoneContato` com DDD e número, com ou sem máscara.
 
 ### Requisições de API Externa (Integrações)
 

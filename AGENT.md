@@ -224,7 +224,7 @@ dotnet ef database update 0      --project .\TerraNova.Infrastructure --startup-
 dotnet ef database drop --force  --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
 
 # Executar
-dotnet run --project .\TerraNova.API
+dotnet run --project .\TerraNova.API --urls http://localhost:5160
 ```
 
 ---
@@ -334,7 +334,7 @@ Invoke-RestMethod "$base/Talhao"   -Method Post -ContentType "application/json" 
 
 ```powershell
 $base = "http://localhost:5160/api"
-$runId = (Get-Date -Format "HHmmss")
+$runId = (Get-Date -Format "yyyyMMddHHmmss")
 
 function Invoke-ApiJson {
   param(
@@ -344,7 +344,7 @@ function Invoke-ApiJson {
   )
 
   $json = if ($null -ne $Body) { $Body | ConvertTo-Json -Depth 8 } else { $null }
-  Invoke-RestMethod $Uri -Method $Method -ContentType "application/json" -Body $json
+  Invoke-RestMethod $Uri -Method $Method -ContentType "application/json" -Body $json -ErrorAction Stop
 }
 
 function Expect-BadRequest {
@@ -429,6 +429,7 @@ if ($null -ne $telefoneDetalhado) {
     produtorId = $produtor.id
   } | Out-Null
   Write-Host "Telefone atualizado para: ($($telefoneDetalhado.ddd)) 9$($runId.Substring(0,8))"
+  $telefoneDetalhado = Invoke-RestMethod "$base/Telefone/by-produtor/$($produtor.id)" -Method Get -ErrorAction Stop
 }
 
 try {
@@ -482,7 +483,7 @@ Expect-BadRequest "telefone duplicado" {
     nome = "Dup Tel"
     email = "duptel$runId@tn.com"
     senha = "123456"
-    telefoneContato = $produtor.telefoneContato
+    telefoneContato = "$($telefoneDetalhado.ddd)$($telefoneDetalhado.numero)"
   }
 }
 

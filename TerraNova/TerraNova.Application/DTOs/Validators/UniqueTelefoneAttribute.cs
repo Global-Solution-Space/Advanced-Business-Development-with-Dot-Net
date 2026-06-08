@@ -1,8 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
-using TerraNova.Application.Repositories;
 using TerraNova.Application.DTOs;
-using TerraNova.Domain.Entities;
+using TerraNova.Application.Repositories;
 
 namespace TerraNova.Application.DTOs.Validators;
 
@@ -11,51 +10,49 @@ public sealed class UniqueTelefoneAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        var telefoneRepo = (IRepository<Telefone>?)validationContext.GetService(typeof(IRepository<Telefone>));
-        if (telefoneRepo == null) return ValidationResult.Success;
+        var telefoneRepo = (ITelefoneRepository?)validationContext.GetService(typeof(ITelefoneRepository));
+        if (telefoneRepo is null) return ValidationResult.Success;
 
-        // Tenta obter o ID da rota para cenários de UPDATE.
         var httpContextAccessor = (IHttpContextAccessor?)validationContext.GetService(typeof(IHttpContextAccessor));
         var routeId = httpContextAccessor?.HttpContext?.Request.RouteValues["id"]?.ToString();
-        Guid.TryParse(routeId, out var currentId);
-        bool isUpdate = currentId != Guid.Empty;
+        var isUpdate = Guid.TryParse(routeId, out var currentId) && currentId != Guid.Empty;
 
-        string? ddd = null;
-        string? numero = null;
+        var parsed = ExtrairTelefone(value);
+        if (parsed is null) return ValidationResult.Success;
 
-        if (value is string telefoneLimpoStr)
+        var (ddd, numero) = parsed.Value;
+
+        if (isUpdate && value is string)
         {
-            // Usado em ProdutorRequest.TelefoneContato (string com DDD + Número)
-            var telefoneFiltro = new string(telefoneLimpoStr.Where(char.IsDigit).ToArray());
-            if (telefoneFiltro.Length is 10 or 11)
-            {
-                ddd = telefoneFiltro.Substring(0, 2);
-                numero = telefoneFiltro.Substring(2);
-            }
+            if (telefoneRepo.ExistsByDddNumeroExceptProdutorId(ddd, numero, currentId))
+                return new ValidationResult("Este DDD e número já estão cadastrados para outro telefone.");
         }
-        else if (value is TelefoneRequest request)
+        else if (isUpdate && value is TelefoneRequest)
         {
-            // DTO de telefone detalhado (usado em Create e Update)
-            ddd = request.Ddd;
-            numero = request.Numero;
+            if (telefoneRepo.ExistsByDddNumeroExceptId(ddd, numero, currentId))
+                return new ValidationResult("Este DDD e número já estão cadastrados para outro telefone.");
         }
-
-        if (ddd is null || numero is null)
-            return ValidationResult.Success;
-
-        if (isUpdate)
+        else if (telefoneRepo.ExistsByDddNumero(ddd, numero))
         {
-            // UPDATE: ignora o telefone do proprio produtor (relacao 1:1).
-            if (telefoneRepo.GetAll().Any(t => t.Ddd == ddd && t.Numero == numero && t.ProdutorId != currentId))
-                return new ValidationResult("Este DDD e Número já estão cadastrados para outro telefone.");
-        }
-        else
-        {
-            // CREATE: qualquer telefone com o mesmo DDD e Número é conflito.
-            if (telefoneRepo.GetAll().Any(t => t.Ddd == ddd && t.Numero == numero))
-                return new ValidationResult("Este DDD e Número já estão cadastrados.");
+            return new ValidationResult("Este DDD e número já estão cadastrados.");
         }
 
         return ValidationResult.Success;
+    }
+
+    private static (string Ddd, string Numero)? ExtrairTelefone(object? value)
+    {
+        if (value is string telefoneContato)
+        {
+            var digits = new string(telefoneContato.Where(char.IsDigit).ToArray());
+            return digits.Length is 10 or 11
+                ? (digits[..2], digits[2..])
+                : null;
+        }
+
+        if (value is TelefoneRequest request)
+            return (request.Ddd, request.Numero);
+
+        return null;
     }
 }
