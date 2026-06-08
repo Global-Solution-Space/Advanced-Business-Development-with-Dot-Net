@@ -96,6 +96,15 @@ O fluxo de desenvolvimento de uma nova funcionalidade seria:
 3. **Application:** Criar os DTOs (`Request` e `Response`), a Interface de Serviço e a sua respectiva implementação (caso de uso).
 4. **API:** Criar o novo *Controller*, injetar o serviço correspondente e expor as rotas via HTTP, configurando *status codes* (200, 201, 400).
 
+### Padrões de Atualização de Domínio (DDD)
+Todas as entidades seguem o padrão **Entity-Behavior** do DDD: possuem um construtor blindado e um método público `Atualizar(...)` que reaproveita as mesmas validações. Os Services de aplicação **nunca instanciam uma nova entidade em um `Update`** — em vez disso, carregam a entidade existente via `repository.GetById(id)` e invocam `existing.Atualizar(...)`. Isso preserva o `Id`, o estado de tracking do EF Core e evita sobrescrita de campos de auditoria.
+
+### Transações Atômicas (Unit of Work)
+Quando um caso de uso altera **mais de uma entidade** na mesma operação (ex.: `ProdutorService.Create` e `ProdutorService.Update` persistem `Produtor` + `Telefone` simultaneamente), o `Service` envolve as chamadas de repositório em um bloco `IUnitOfWork.ExecuteInTransaction(...)`. Isso garante que todas as tabelas relacionadas sejam commitadas em uma única transação — se qualquer operação falhar, todas sofrem rollback, preservando a consistência do banco.
+A infraestrutura fornece:
+- `TerraNova.Application.Repositories.IUnitOfWork` — abstração (Clean Architecture)
+- `TerraNova.Infrastructure.Persistence.UnitOfWork` — implementação concreta baseada em `TerraNovaContext.Database.BeginTransaction()`
+
 ---
 
 ## 🗄️ Banco de Dados e Relacionamentos
