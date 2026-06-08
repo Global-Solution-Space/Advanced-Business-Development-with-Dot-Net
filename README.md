@@ -287,3 +287,46 @@ Sistema de alertas reativos com **deduplicação automática**: não cria alerta
 | DELETE | `/api/alertaagricola/{id}` | Remove alerta |
 
 **Regras de Deduplicação:** Não permite alerta ativo (`resolvido = false`) com mesmo `titulo` para o mesmo `talhaoId`.
+
+
+## Imagens Tabelas Banco de Dados
+
+### EFMigration
+
+![Tabela EFMigration](docs/db_efmigration.png)
+
+### produtor
+
+![Tabela produtor](docs/db_produtor.png)
+
+### telefone
+
+![Tabela telefone](docs/db_telefone.png)
+
+### localizacao
+
+![Tabela localizacao](docs/db_localizacao.png)
+
+### propriedade 
+
+![Tabela propriedade](docs/db_propriedade.png)
+
+### talhao
+
+![Tabela talhao](docs/db_talhao.png)
+
+### tipo_plantacao
+
+![Tabela tipo_platancao](docs/db_tipoplantacao.png)
+
+### req_api
+
+![Tabela req_api](docs/db_reqapi.png)
+
+### dado_temporal
+
+![Tabela dado_temporal](docs/db_dadotemporal.png)
+
+### alerta_agricola
+
+![Tabela alerta_agricola](docs/db_alertaagricola.png)
