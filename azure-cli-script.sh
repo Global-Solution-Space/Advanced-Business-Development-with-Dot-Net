@@ -74,6 +74,7 @@ az vm run-command invoke \
       curl \
       gnupg \
       git \
+      jq \
       nano \
       unzip \
       wget
@@ -116,13 +117,18 @@ az vm run-command invoke \
   "
 
 # Exibir resumo final
-PUBLIC_IP=$(az vm show \ --resource-group "$RG" \ --name "$VM" \ --show-details \ --query publicIps \ --output tsv)
+PUBLIC_IP=$(az vm show \
+  --resource-group "$RG" \
+  --name "$VM" \
+  --show-details \
+  --query publicIps \
+  --output tsv)
 
 echo "======================================================"
 echo "  Provisionamento concluído com sucesso!"
 echo "  IP Público da VM  : $PUBLIC_IP"
 echo "  Acesse via SSH    : ssh $ADMIN@$PUBLIC_IP"
 echo "  API (após deploy) : http://$PUBLIC_IP:8080"
-echo "  Swagger           : http://$PUBLIC_IP:8080/swagger"
+echo "  Swagger           : http://$PUBLIC_IP:8080"
 echo "  Oracle (externo)  : $PUBLIC_IP:1521  (SID: XE / PDB: XEPDB1)"
 echo "======================================================"
