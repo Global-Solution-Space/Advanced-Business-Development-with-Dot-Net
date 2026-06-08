@@ -338,3 +338,352 @@ Sistema de alertas reativos com **deduplicação automática**: não cria alerta
 ### alerta_agricola
 
 ![Tabela alerta_agricola](docs/db_alertaagricola.png)
+
+# 🧪 Comandos CRUD
+
+Abaixo estão os comandos `curl` para exercitar a API após o `docker compose up -d --build` estar rodando. A API expõe os endpoints no prefixo `api/` e a interface interativa do Swagger está disponível em `http://localhost:8080`.
+
+> 🔁 **Ordem recomendada**: como as entidades possuem chaves estrangeiras entre si, cadastre primeiro o que não depende de ninguém e vá avançando. Os exemplos abaixo capturam o `id` retornado em cada `CREATE` e reutilizam esse valor automaticamente nos comandos seguintes.
+
+> 🧰 **Pré-requisito para não digitar IDs manualmente**: execute os comandos em Bash, na mesma sessão de terminal, com `jq` instalado. Na VM Linux criada pelo `azure-cli-script.sh`, o `jq` já é instalado automaticamente; em uma VM Ubuntu manual, use `sudo apt-get update -y && sudo apt-get install -y jq`.
+
+> 🌍 Substitua `localhost:8080` pelo IP público da VM (`$PUBLIC_IP:8080`) caso esteja executando no Azure.
+
+```bash
+API_URL="http://localhost:8080"
+```
+
+## 1️⃣ Criar um Tipo de Plantação (sem dependências)
+
+```bash
+# CREATE
+TIPO_PLANTACAO_ID=$(curl -fsS -X POST "$API_URL/api/tipoplantacao" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tipoPlant": "Soja"
+  }' | jq -r '.id // .Id')
+
+echo "TIPO_PLANTACAO_ID=$TIPO_PLANTACAO_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/tipoplantacao"
+
+# READ BY ID
+curl -fsS "$API_URL/api/tipoplantacao/$TIPO_PLANTACAO_ID"
+
+# UPDATE
+curl -fsS -X PUT "$API_URL/api/tipoplantacao/$TIPO_PLANTACAO_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tipoPlant": "Soja Transgênica"
+  }'
+
+```
+
+## 2️⃣ Criar uma Localização (sem dependências)
+
+```bash
+# CREATE
+LOCALIZACAO_ID=$(curl -fsS -X POST "$API_URL/api/localizacao" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "latitude":  -23.5505,
+    "longitude": -46.6333
+  }' | jq -r '.id // .Id')
+
+echo "LOCALIZACAO_ID=$LOCALIZACAO_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/localizacao"
+
+# READ BY ID
+curl -fsS "$API_URL/api/localizacao/$LOCALIZACAO_ID"
+
+# UPDATE
+curl -fsS -X PUT "$API_URL/api/localizacao/$LOCALIZACAO_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "latitude":  -22.9068,
+    "longitude": -43.1729
+  }'
+
+```
+
+## 3️⃣ Criar um Produtor (depende apenas de si mesmo; já cadastra o telefone)
+
+```bash
+# CREATE (cadastra produtor + telefone na mesma chamada)
+PRODUTOR_ID=$(curl -fsS -X POST "$API_URL/api/produtor" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome":   "João da Silva",
+    "email":  "joao.silva@terranova.com",
+    "senha":  "senha123",
+    "telefoneContato": "11987654321"
+  }' | jq -r '.id // .Id')
+
+echo "PRODUTOR_ID=$PRODUTOR_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/produtor"
+
+# READ BY ID
+curl -fsS "$API_URL/api/produtor/$PRODUTOR_ID"
+
+# READ BY EMAIL
+curl -fsS "$API_URL/api/produtor/by-email?email=joao.silva@terranova.com"
+
+# UPDATE
+curl -fsS -X PUT "$API_URL/api/produtor/$PRODUTOR_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome":   "João da Silva Jr.",
+    "email":  "joao.jr@terranova.com",
+    "senha":  "novaSenha123",
+    "telefoneContato": "11999998888"
+  }'
+
+```
+
+## 4️⃣ Criar uma Propriedade (depende de um Produtor + uma Localização)
+
+```bash
+# CREATE
+PROPRIEDADE_ID=$(curl -fsS -X POST "$API_URL/api/propriedade" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg produtorId "$PRODUTOR_ID" \
+    --arg localizacaoId "$LOCALIZACAO_ID" \
+    '{
+      nome: "Fazenda Boa Vista",
+      tamanhoTotal: 150.75,
+      produtorId: $produtorId,
+      localizacaoId: $localizacaoId
+    }')" | jq -r '.id // .Id')
+
+echo "PROPRIEDADE_ID=$PROPRIEDADE_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/propriedade"
+
+# READ BY ID
+curl -fsS "$API_URL/api/propriedade/$PROPRIEDADE_ID"
+
+# READ BY PRODUTOR
+curl -fsS "$API_URL/api/propriedade/by-produtor/$PRODUTOR_ID"
+
+# UPDATE
+curl -fsS -X PUT "$API_URL/api/propriedade/$PROPRIEDADE_ID" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg produtorId "$PRODUTOR_ID" \
+    --arg localizacaoId "$LOCALIZACAO_ID" \
+    '{
+      nome: "Fazenda Boa Vista - Sede",
+      tamanhoTotal: 175.00,
+      produtorId: $produtorId,
+      localizacaoId: $localizacaoId
+    }')"
+
+```
+
+## 5️⃣ Criar um Talhão (depende de TipoPlantação + Propriedade + Localização)
+
+```bash
+# CREATE
+TALHAO_ID=$(curl -fsS -X POST "$API_URL/api/talhao" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg tipoPlantacaoId "$TIPO_PLANTACAO_ID" \
+    --arg propriedadeId "$PROPRIEDADE_ID" \
+    --arg localizacaoId "$LOCALIZACAO_ID" \
+    '{
+      nomeTalhao: "Talhão 01 - Soja",
+      volumArea: 45.50,
+      tipoPlantacaoId: $tipoPlantacaoId,
+      propriedadeId: $propriedadeId,
+      localizacaoId: $localizacaoId
+    }')" | jq -r '.id // .Id')
+
+echo "TALHAO_ID=$TALHAO_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/talhao"
+
+# READ BY ID
+curl -fsS "$API_URL/api/talhao/$TALHAO_ID"
+
+# READ BY PROPRIEDADE
+curl -fsS "$API_URL/api/talhao/by-propriedade/$PROPRIEDADE_ID"
+
+# READ BY TIPO PLANTACAO
+curl -fsS "$API_URL/api/talhao/by-tipo-plantacao/$TIPO_PLANTACAO_ID"
+
+# UPDATE
+curl -fsS -X PUT "$API_URL/api/talhao/$TALHAO_ID" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg tipoPlantacaoId "$TIPO_PLANTACAO_ID" \
+    --arg propriedadeId "$PROPRIEDADE_ID" \
+    --arg localizacaoId "$LOCALIZACAO_ID" \
+    '{
+      nomeTalhao: "Talhão 01 - Soja (Renomeado)",
+      volumArea: 50.00,
+      tipoPlantacaoId: $tipoPlantacaoId,
+      propriedadeId: $propriedadeId,
+      localizacaoId: $localizacaoId
+    }')"
+
+```
+
+## 7️⃣ Criar um Tipo de API (sem dependências)
+
+```bash
+# CREATE
+TIPO_API_ID=$(curl -fsS -X POST "$API_URL/api/tipoapi" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nomeTipoApi": "NASA POWER"
+  }' | jq -r '.id // .Id')
+
+echo "TIPO_API_ID=$TIPO_API_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/tipoapi"
+
+# READ BY ID
+curl -fsS "$API_URL/api/tipoapi/$TIPO_API_ID"
+
+# UPDATE
+curl -fsS -X PUT "$API_URL/api/tipoapi/$TIPO_API_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nomeTipoApi": "NASA POWER"
+  }'
+```
+
+## 8️⃣ Criar uma Requisição de API (depende de Tipo API + Talhão)
+
+```bash
+# CREATE
+# tipoParam: 0 = NVDI/SATVEG, 1 = PRECTOTCORR/NASA POWER
+REQ_API_ID=$(curl -fsS -X POST "$API_URL/api/reqapi" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg tipoApiId "$TIPO_API_ID" \
+    --arg talhaoId "$TALHAO_ID" \
+    '{
+      tipoParam: 1,
+      tipoApiId: $tipoApiId,
+      talhaoId: $talhaoId
+    }')" | jq -r '.id // .Id')
+
+echo "REQ_API_ID=$REQ_API_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/reqapi"
+
+# READ BY ID
+curl -fsS "$API_URL/api/reqapi/$REQ_API_ID"
+
+# READ BY TALHÃO
+curl -fsS "$API_URL/api/reqapi/talhao/$TALHAO_ID"
+```
+
+## 9️⃣ Criar um Alerta Agrícola (depende de Talhão)
+
+```bash
+# CREATE
+# nivelAlerta: 0 = Baixo, 1 = Medio, 2 = Alto, 3 = Critico
+ALERTA_ID=$(curl -fsS -X POST "$API_URL/api/alertaagricola" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg talhaoId "$TALHAO_ID" \
+    '{
+      titulo: "Risco de estiagem",
+      descricao: "Monitorar baixa umidade e necessidade de irrigação no talhão.",
+      nivelAlerta: 2,
+      talhaoId: $talhaoId
+    }')" | jq -r '.id // .Id')
+
+echo "ALERTA_ID=$ALERTA_ID"
+
+# READ ALL
+curl -fsS "$API_URL/api/alertaagricola"
+
+# READ BY ID
+curl -fsS "$API_URL/api/alertaagricola/$ALERTA_ID"
+
+# READ BY TALHÃO
+curl -fsS "$API_URL/api/alertaagricola/talhao/$TALHAO_ID"
+
+# UPDATE
+curl -fsS -X PUT "$API_URL/api/alertaagricola/$ALERTA_ID" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg talhaoId "$TALHAO_ID" \
+    '{
+      titulo: "Risco de estiagem atualizado",
+      descricao: "Acompanhar chuva acumulada e revisar planejamento de irrigação.",
+      nivelAlerta: 3,
+      talhaoId: $talhaoId
+    }')"
+
+# RESOLVER
+curl -fsS -X PATCH "$API_URL/api/alertaagricola/$ALERTA_ID/resolver"
+
+# REABRIR
+curl -fsS -X PATCH "$API_URL/api/alertaagricola/$ALERTA_ID/reabrir"
+```
+
+## 🔟 Consultar Dados Temporais (gerados pela Req API)
+
+```bash
+# READ ALL
+curl -fsS "$API_URL/api/dadotemporal"
+
+# READ BY TALHÃO
+curl -fsS "$API_URL/api/dadotemporal/talhao/$TALHAO_ID"
+
+# READ BY REQ API
+curl -fsS "$API_URL/api/dadotemporal/req-api/$REQ_API_ID"
+
+# READ BY ID
+DADO_TEMPORAL_ID=$(curl -fsS "$API_URL/api/dadotemporal/req-api/$REQ_API_ID" | jq -r '.[0].id // .[0].Id // empty')
+
+if [ -n "$DADO_TEMPORAL_ID" ]; then
+  curl -fsS "$API_URL/api/dadotemporal/$DADO_TEMPORAL_ID"
+else
+  echo "Nenhum dado temporal retornado para a requisição $REQ_API_ID"
+fi
+```
+
+> ℹ️ `DadoTemporal` não possui `POST`, `PUT` ou `DELETE` próprios no controller. Os registros são criados automaticamente ao executar `POST /api/reqapi` e são removidos em cascata ao remover a requisição correspondente.
+
+## 🧹 Remover os registros criados (ordem segura para DELETE)
+
+```bash
+# DELETE ALERTA AGRÍCOLA
+curl -fsS -X DELETE "$API_URL/api/alertaagricola/$ALERTA_ID"
+
+# DELETE REQ API (remove os dados temporais associados)
+curl -fsS -X DELETE "$API_URL/api/reqapi/$REQ_API_ID"
+
+# DELETE TIPO API
+curl -fsS -X DELETE "$API_URL/api/tipoapi/$TIPO_API_ID"
+
+# DELETE TALHÃO
+curl -fsS -X DELETE "$API_URL/api/talhao/$TALHAO_ID"
+
+# DELETE PROPRIEDADE
+curl -fsS -X DELETE "$API_URL/api/propriedade/$PROPRIEDADE_ID"
+
+# DELETE PRODUTOR
+curl -fsS -X DELETE "$API_URL/api/produtor/$PRODUTOR_ID"
+
+# DELETE LOCALIZAÇÃO
+curl -fsS -X DELETE "$API_URL/api/localizacao/$LOCALIZACAO_ID"
+
+# DELETE TIPO DE PLANTAÇÃO
+curl -fsS -X DELETE "$API_URL/api/tipoplantacao/$TIPO_PLANTACAO_ID"
+```
