@@ -39,4 +39,5 @@ public class TerraNovaContext(DbContextOptions<TerraNovaContext> options) : DbCo
                 .HasPrecision(18, 4);
         });
     }
+
 }

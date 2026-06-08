@@ -57,9 +57,9 @@ public sealed class PropriedadeService(
             && existing.LocalizacaoId != request.LocalizacaoId)
             throw new InvalidOperationException("Esta localização já está associada a outra propriedade.");
 
-        var entity = request.ToDomain();
-        propriedadeRepository.Update(id, entity);
-        return PropriedadeResponse.FromDomain(entity);
+        existing.Atualizar(request.Nome, request.TamanhoTotal, request.ProdutorId, request.LocalizacaoId);
+        propriedadeRepository.Update(id, existing);
+        return PropriedadeResponse.FromDomain(existing);
     }
 
     public bool Delete(Guid id) => propriedadeRepository.Delete(id);

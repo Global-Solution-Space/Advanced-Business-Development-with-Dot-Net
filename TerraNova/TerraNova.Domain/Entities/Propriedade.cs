@@ -25,6 +25,11 @@ public sealed class Propriedade : BaseEntity
  
     public Propriedade(string nome, decimal tamanhoTotal, Guid produtorId, Guid localizacaoId)
     {
+        Atualizar(nome, tamanhoTotal, produtorId, localizacaoId);
+    }
+
+    public void Atualizar(string nome, decimal tamanhoTotal, Guid produtorId, Guid localizacaoId)
+    {
         if (string.IsNullOrWhiteSpace(nome))
             throw new DomainException("O nome da propriedade não pode ser vazio.");
  

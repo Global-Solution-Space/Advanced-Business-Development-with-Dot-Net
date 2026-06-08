@@ -14,6 +14,11 @@ public sealed class TipoPlantacao : BaseEntity
 
     public TipoPlantacao(string tipoPlant)
     {
+        Atualizar(tipoPlant);
+    }
+
+    public void Atualizar(string tipoPlant)
+    {
         if (string.IsNullOrWhiteSpace(tipoPlant))
             throw new DomainException("O tipo de plantação não pode ser vazio.");
 

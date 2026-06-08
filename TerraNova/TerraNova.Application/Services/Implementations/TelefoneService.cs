@@ -48,9 +48,9 @@ public sealed class TelefoneService(
         if (telefoneRepository.ExistsByDddNumeroExceptId(request.Ddd, request.Numero, id))
             throw new InvalidOperationException("Este DDD e número já estão cadastrados para outro telefone.");
 
-        var entity = new Telefone(request.Ddd, request.Numero, existing.ProdutorId);
-        telefoneRepository.Update(id, entity);
-        return TelefoneResponse.FromDomain(entity);
+        existing.Atualizar(request.Ddd, request.Numero);
+        telefoneRepository.Update(id, existing);
+        return TelefoneResponse.FromDomain(existing);
     }
 
     public bool Delete(Guid id) => telefoneRepository.Delete(id);

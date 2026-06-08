@@ -20,6 +20,20 @@ public sealed class Produtor : BaseEntity
  
     public Produtor(string nome, string email, string senha)
     {
+        SetNome(nome);
+        SetEmail(email);
+        SetSenha(senha);
+    }
+
+    public void Atualizar(string nome, string email, string senha)
+    {
+        SetNome(nome);
+        SetEmail(email);
+        SetSenha(senha);
+    }
+
+    private void SetNome(string nome)
+    {
         if (string.IsNullOrWhiteSpace(nome))
             throw new DomainException("O nome não pode ser vazio.");
 
@@ -28,6 +42,11 @@ public sealed class Produtor : BaseEntity
         if (nome.Length > 30)
             throw new DomainException("O nome deve ter no máximo 30 caracteres.");
 
+        Nome = nome;
+    }
+
+    private void SetEmail(string email)
+    {
         if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
             throw new DomainException("O e-mail informado é inválido.");
 
@@ -36,14 +55,17 @@ public sealed class Produtor : BaseEntity
         if (email.Length > 30)
             throw new DomainException("O e-mail deve ter no máximo 30 caracteres.");
 
+        Email = email;
+    }
+
+    private void SetSenha(string senha)
+    {
         if (string.IsNullOrWhiteSpace(senha) || senha.Length < 6)
             throw new DomainException("A senha deve ter pelo menos 6 caracteres.");
 
         if (senha.Length > 30)
             throw new DomainException("A senha deve ter no máximo 30 caracteres.");
 
-        Nome  = nome;
-        Email = email;
         Senha = senha;
     }
 

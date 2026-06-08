@@ -25,12 +25,12 @@ public sealed class TipoPlantacaoService(IRepository<TipoPlantacao> tipoPlantaca
 
     public TipoPlantacaoResponse Update(Guid id, TipoPlantacaoRequest request)
     {
-        _ = tipoPlantacaoRepository.GetById(id)
+        var existing = tipoPlantacaoRepository.GetById(id)
             ?? throw new InvalidOperationException("Tipo de plantação não encontrado.");
 
-        var entity = request.ToDomain();
-        tipoPlantacaoRepository.Update(id, entity);
-        return TipoPlantacaoResponse.FromDomain(entity);
+        existing.Atualizar(request.TipoPlant);
+        tipoPlantacaoRepository.Update(id, existing);
+        return TipoPlantacaoResponse.FromDomain(existing);
     }
 
     public bool Delete(Guid id) => tipoPlantacaoRepository.Delete(id);

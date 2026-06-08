@@ -7,7 +7,8 @@ namespace TerraNova.Application.Services.Implementations;
 
 public sealed class ProdutorService(
     IProdutorRepository produtorRepository,
-    ITelefoneRepository telefoneRepository) : IProdutorService
+    ITelefoneRepository telefoneRepository,
+    IUnitOfWork         unitOfWork) : IProdutorService
 {
     public IReadOnlyList<ProdutorResponse> GetAll() =>
         produtorRepository.GetAll().Select(ProdutorResponse.FromDomain).ToList();
@@ -40,7 +41,14 @@ public sealed class ProdutorService(
         var telefoneDetalhado = new Telefone(ddd, numero, produtor.Id);
         produtor.AtribuirTelefone(telefoneDetalhado);
 
-        produtorRepository.Add(produtor);
+        // Transação atômica: Produtor + Telefone persistem juntos.
+        // Se algo falhar (ex.: violação de unicidade no banco), ambos sofrem rollback.
+        unitOfWork.ExecuteInTransaction(() =>
+        {
+            produtorRepository.AddNoSave(produtor);
+            telefoneRepository.AddNoSave(telefoneDetalhado);
+        });
+
         return ProdutorResponse.FromDomain(produtor);
     }
 
@@ -53,27 +61,30 @@ public sealed class ProdutorService(
         if (emailExistente is not null && emailExistente.Id != id)
             throw new InvalidOperationException("Já existe um produtor cadastrado com este e-mail.");
 
-        var produtor = new Produtor(request.Nome, request.Email, request.Senha);
+        existing.Atualizar(request.Nome, request.Email, request.Senha);
 
         var (ddd, numero) = ExtrairTelefone(request.TelefoneContato);
         if (telefoneRepository.ExistsByDddNumeroExceptProdutorId(ddd, numero, id))
             throw new InvalidOperationException("Este DDD e número já estão cadastrados para outro telefone.");
 
         var telefone = new Telefone(ddd, numero, id);
+        var telefoneExistente = existing.TelefoneDetalhado?.Id;
 
-        produtorRepository.Update(id, produtor);
-
-        if (existing.TelefoneDetalhado?.Id is Guid telefoneId)
+        // Transação atômica: Produtor + Telefone (insert ou update) persistem juntos.
+        // Sem isso, o SaveChanges do Produtor poderia commitar e o do Telefone falhar,
+        // deixando o banco em estado inconsistente.
+        unitOfWork.ExecuteInTransaction(() =>
         {
-            telefoneRepository.Update(telefoneId, telefone);
-        }
-        else
-        {
-            telefoneRepository.Add(telefone);
-        }
+            produtorRepository.UpdateNoSave(id, existing);
 
-        produtor.AtribuirTelefone(telefone);
-        return ProdutorResponse.FromDomain(produtor);
+            if (telefoneExistente is Guid telefoneId)
+                telefoneRepository.UpdateNoSave(telefoneId, telefone);
+            else
+                telefoneRepository.AddNoSave(telefone);
+        });
+
+        existing.AtribuirTelefone(telefone);
+        return ProdutorResponse.FromDomain(existing);
     }
 
     public bool Delete(Guid id) => produtorRepository.Delete(id);

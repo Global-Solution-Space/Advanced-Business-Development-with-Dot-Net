@@ -25,12 +25,12 @@ public sealed class TipoApiService(IRepository<TipoApi> tipoApiRepository) : ITi
 
     public TipoApiResponse Update(Guid id, TipoApiRequest request)
     {
-        _ = tipoApiRepository.GetById(id)
+        var existing = tipoApiRepository.GetById(id)
             ?? throw new InvalidOperationException("Tipo de API não encontrado.");
 
-        var entity = request.ToDomain();
-        tipoApiRepository.Update(id, entity);
-        return TipoApiResponse.FromDomain(entity);
+        existing.Atualizar(request.NomeTipoApi);
+        tipoApiRepository.Update(id, existing);
+        return TipoApiResponse.FromDomain(existing);
     }
 
     public bool Delete(Guid id) => tipoApiRepository.Delete(id);

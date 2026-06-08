@@ -25,12 +25,12 @@ public sealed class LocalizacaoService(IRepository<Localizacao> localizacaoRepos
 
     public LocalizacaoResponse Update(Guid id, LocalizacaoRequest request)
     {
-        _ = localizacaoRepository.GetById(id)
+        var existing = localizacaoRepository.GetById(id)
             ?? throw new InvalidOperationException("Localização não encontrada.");
 
-        var entity = request.ToDomain();
-        localizacaoRepository.Update(id, entity);
-        return LocalizacaoResponse.FromDomain(entity);
+        existing.Atualizar(request.ToDomain().Coordenadas);
+        localizacaoRepository.Update(id, existing);
+        return LocalizacaoResponse.FromDomain(existing);
     }
 
     public bool Delete(Guid id) => localizacaoRepository.Delete(id);

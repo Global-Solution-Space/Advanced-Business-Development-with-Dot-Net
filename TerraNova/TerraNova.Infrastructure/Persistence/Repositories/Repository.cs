@@ -25,23 +25,57 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
         Context.SaveChanges();
         return entity;
     }
- 
+
+    /// <summary>
+    /// Adiciona a entidade ao contexto SEM chamar SaveChanges.
+    /// Use quando quiser empilhar várias operações em uma única transação.
+    /// </summary>
+    public void AddNoSave(T entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        _set.Add(entity);
+    }
+
     public T Update(Guid id, T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-
-        // Atribui o id da rota a entidade antes de qualquer operacao do EF Core
-        Context.Entry(entity).Property(e => e.Id).CurrentValue = id;
-
-        var entry = Context.Entry(entity);
-  
-        if (entry.State == EntityState.Detached)
-        {
-            _set.Update(entity);
-        }
-
+        MarcarComoModificado(id, entity);
         Context.SaveChanges();
         return entity;
+    }
+
+    /// <summary>
+    /// Marca a entidade como modificada SEM chamar SaveChanges.
+    /// Use quando quiser empilhar várias operações em uma única transação.
+    /// </summary>
+    public void UpdateNoSave(Guid id, T entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        MarcarComoModificado(id, entity);
+    }
+
+    private void MarcarComoModificado(Guid id, T entity)
+    {
+        // Garante que a entidade carrega o Id da rota
+        if (entity.Id != id)
+            Context.Entry(entity).Property(e => e.Id).CurrentValue = id;
+
+        // Anexa a entidade sem marcar todas as colunas como Modified.
+        // Vamos marcar apenas as propriedades escalares não-chave como Modified
+        // para preservar colunas de auditoria (DataCriacao, RowVersion, etc.)
+        // e evitar UPDATE desnecessário em FKs inalteradas.
+        if (Context.Entry(entity).State == EntityState.Detached)
+            _set.Attach(entity);
+
+        var entry = Context.Entry(entity);
+
+        // Marca apenas as propriedades "normais" (exclui chave primária e navegações)
+        // como modificadas — o EF gera um UPDATE focado nos campos realmente alterados.
+        foreach (var property in entry.Properties)
+        {
+            if (property.Metadata.IsPrimaryKey()) continue;
+            property.IsModified = true;
+        }
     }
  
     public bool Delete(Guid id)

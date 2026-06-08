@@ -76,9 +76,9 @@ public sealed class TalhaoService(
             && existing.LocalizacaoId != request.LocalizacaoId)
             throw new InvalidOperationException("Esta localização já está associada a outro talhão.");
 
-        var entity = request.ToDomain();
-        talhaoRepository.Update(id, entity);
-        return TalhaoResponse.FromDomain(entity);
+        existing.Atualizar(request.NomeTalhao, request.VolumArea, request.TipoPlantacaoId, request.PropriedadeId, request.LocalizacaoId);
+        talhaoRepository.Update(id, existing);
+        return TalhaoResponse.FromDomain(existing);
     }
 
     public bool Delete(Guid id) => talhaoRepository.Delete(id);

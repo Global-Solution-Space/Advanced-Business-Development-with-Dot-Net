@@ -14,6 +14,11 @@ public sealed class TipoApi : BaseEntity
  
     public TipoApi(string nomeTipoApi)
     {
+        Atualizar(nomeTipoApi);
+    }
+
+    public void Atualizar(string nomeTipoApi)
+    {
         if (string.IsNullOrWhiteSpace(nomeTipoApi))
             throw new DomainException("O nome do tipo de API não pode ser vazio.");
  

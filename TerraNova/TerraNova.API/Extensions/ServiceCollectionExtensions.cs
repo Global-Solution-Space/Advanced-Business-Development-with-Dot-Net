@@ -46,7 +46,10 @@ public static class ServiceCollectionExtensions
         
         // Repositório genérico para entidades sem queries especiais
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
- 
+
+        // Unit of Work: transações atômicas entre múltiplos repositórios
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         return services;
     }
  

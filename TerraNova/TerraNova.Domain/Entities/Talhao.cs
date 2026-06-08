@@ -28,6 +28,11 @@ public sealed class Talhao : BaseEntity
  
     public Talhao(string nomeTalhao, decimal volumArea, Guid tipoPlantacaoId, Guid propriedadeId, Guid localizacaoId)
     {
+        Atualizar(nomeTalhao, volumArea, tipoPlantacaoId, propriedadeId, localizacaoId);
+    }
+
+    public void Atualizar(string nomeTalhao, decimal volumArea, Guid tipoPlantacaoId, Guid propriedadeId, Guid localizacaoId)
+    {
         if (string.IsNullOrWhiteSpace(nomeTalhao))
             throw new DomainException("O nome do talhão não pode ser vazio.");
  

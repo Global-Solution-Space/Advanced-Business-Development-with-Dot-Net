@@ -9,6 +9,8 @@ public interface IRepository<T> where T : BaseEntity
     T? GetById(Guid id);
     T  Add(T entity);
     T  Update(Guid id, T entity);
+    void AddNoSave(T entity);
+    void UpdateNoSave(Guid id, T entity);
     bool Delete(Guid id);
     bool ExistsById(Guid id);
     bool ExistsByNome(string valor);

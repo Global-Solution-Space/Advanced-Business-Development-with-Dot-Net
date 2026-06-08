@@ -19,6 +19,12 @@ public sealed class Telefone : BaseEntity
  
     public Telefone(string ddd, string numero, Guid produtorId)
     {
+        Atualizar(ddd, numero);
+        ProdutorId = produtorId;
+    }
+
+    public void Atualizar(string ddd, string numero)
+    {
         ddd = ddd.Trim();
         numero = numero.Trim();
 
@@ -27,13 +33,9 @@ public sealed class Telefone : BaseEntity
  
         if (string.IsNullOrWhiteSpace(numero) || numero.Length is < 8 or > 9 || !numero.All(char.IsDigit))
             throw new DomainException("O número deve ter entre 8 e 9 dígitos.");
- 
-        if (produtorId == Guid.Empty)
-            throw new DomainException("O telefone deve estar associado a um produtor válido.");
- 
-        Ddd        = ddd;
-        Numero     = numero;
-        ProdutorId = produtorId;
+
+        Ddd    = ddd;
+        Numero = numero;
     }
  
     /// <summary>Número completo formatado: (DDD) Número.</summary>
