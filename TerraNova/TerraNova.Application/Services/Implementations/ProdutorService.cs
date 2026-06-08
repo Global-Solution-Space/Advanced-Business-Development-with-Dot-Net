@@ -54,28 +54,27 @@ public sealed class ProdutorService(
 
     public ProdutorResponse Update(Guid id, ProdutorRequest request)
     {
-        var existing = produtorRepository.GetById(id)
-                       ?? throw new InvalidOperationException("Produtor não encontrado.");
+        if (!produtorRepository.ExistsById(id))
+            throw new KeyNotFoundException("Produtor não encontrado.");
 
         var emailExistente = produtorRepository.GetByEmail(request.Email);
         if (emailExistente is not null && emailExistente.Id != id)
             throw new InvalidOperationException("Já existe um produtor cadastrado com este e-mail.");
 
-        existing.Atualizar(request.Nome, request.Email, request.Senha);
-
         var (ddd, numero) = ExtrairTelefone(request.TelefoneContato);
         if (telefoneRepository.ExistsByDddNumeroExceptProdutorId(ddd, numero, id))
             throw new InvalidOperationException("Este DDD e número já estão cadastrados para outro telefone.");
 
+        var produtor = request.ToDomain();
         var telefone = new Telefone(ddd, numero, id);
-        var telefoneExistente = existing.TelefoneDetalhado?.Id;
+        var telefoneExistente = telefoneRepository.GetByProdutorId(id)?.Id;
 
         // Transação atômica: Produtor + Telefone (insert ou update) persistem juntos.
         // Sem isso, o SaveChanges do Produtor poderia commitar e o do Telefone falhar,
         // deixando o banco em estado inconsistente.
         unitOfWork.ExecuteInTransaction(() =>
         {
-            produtorRepository.UpdateNoSave(id, existing);
+            produtorRepository.UpdateNoSave(id, produtor);
 
             if (telefoneExistente is Guid telefoneId)
                 telefoneRepository.UpdateNoSave(telefoneId, telefone);
@@ -83,8 +82,8 @@ public sealed class ProdutorService(
                 telefoneRepository.AddNoSave(telefone);
         });
 
-        existing.AtribuirTelefone(telefone);
-        return ProdutorResponse.FromDomain(existing);
+        produtor.AtribuirTelefone(telefone);
+        return ProdutorResponse.FromDomain(produtor);
     }
 
     public bool Delete(Guid id) => produtorRepository.Delete(id);

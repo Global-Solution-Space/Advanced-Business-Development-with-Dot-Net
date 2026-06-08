@@ -55,14 +55,7 @@ public class ProdutorController(IProdutorService produtorService) : ControllerBa
     public IActionResult Update(Guid id, [FromBody] ProdutorRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        try
-        {
-            return Ok(produtorService.Update(id, request));
-        }
-        catch (InvalidOperationException)
-        {
-            return NotFound();
-        }
+        return Ok(produtorService.Update(id, request));
     }
 
     /// <summary>Remove um produtor pelo ID.</summary>
