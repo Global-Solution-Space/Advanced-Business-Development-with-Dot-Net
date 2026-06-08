@@ -53,36 +53,30 @@ public sealed class ProdutorService(
         if (emailExistente is not null && emailExistente.Id != id)
             throw new InvalidOperationException("Já existe um produtor cadastrado com este e-mail.");
 
-        var entity = new Produtor(request.Nome, request.Email, request.Senha);
-        produtorRepository.Update(id, entity);
+        var produtor = new Produtor(request.Nome, request.Email, request.Senha);
 
-        var telefone = AtualizarTelefoneContato(id, request.TelefoneContato, existing.TelefoneDetalhado?.Id);
-        entity.AtribuirTelefone(telefone);
-
-        return ProdutorResponse.FromDomain(entity);
-    }
-
-    public bool Delete(Guid id) => produtorRepository.Delete(id);
-
-    private Telefone AtualizarTelefoneContato(Guid produtorId, string telefoneContato, Guid? telefoneId)
-    {
-        var (ddd, numero) = ExtrairTelefone(telefoneContato);
-        if (telefoneRepository.ExistsByDddNumeroExceptProdutorId(ddd, numero, produtorId))
+        var (ddd, numero) = ExtrairTelefone(request.TelefoneContato);
+        if (telefoneRepository.ExistsByDddNumeroExceptProdutorId(ddd, numero, id))
             throw new InvalidOperationException("Este DDD e número já estão cadastrados para outro telefone.");
 
-        var telefone = new Telefone(ddd, numero, produtorId);
+        var telefone = new Telefone(ddd, numero, id);
 
-        if (telefoneId.HasValue)
+        produtorRepository.Update(id, produtor);
+
+        if (existing.TelefoneDetalhado?.Id is Guid telefoneId)
         {
-            telefoneRepository.Update(telefoneId.Value, telefone);
+            telefoneRepository.Update(telefoneId, telefone);
         }
         else
         {
             telefoneRepository.Add(telefone);
         }
 
-        return telefone;
+        produtor.AtribuirTelefone(telefone);
+        return ProdutorResponse.FromDomain(produtor);
     }
+
+    public bool Delete(Guid id) => produtorRepository.Delete(id);
 
     private static (string Ddd, string Numero) ExtrairTelefone(string telefoneContato)
     {
