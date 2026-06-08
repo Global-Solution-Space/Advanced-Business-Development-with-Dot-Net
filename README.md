@@ -566,7 +566,7 @@ curl -fsS -X PUT "$API_URL/api/tipoapi/$TIPO_API_ID" \
 
 ```bash
 # CREATE
-# tipoParam: 0 = NVDI/SATVEG, 1 = PRECTOTCORR/NASA POWER
+# tipoParam: 0 = NDVI/SATVEG, 1 = PRECTOTCORR/NASA POWER
 REQ_API_ID=$(curl -fsS -X POST "$API_URL/api/reqapi" \
   -H "Content-Type: application/json" \
   -d "$(jq -n \

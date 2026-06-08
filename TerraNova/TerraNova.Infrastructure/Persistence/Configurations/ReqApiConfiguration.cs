@@ -13,7 +13,7 @@ public sealed class ReqApiConfiguration : IEntityTypeConfiguration<ReqApi>
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).HasColumnName("id_api");
  
-        // Persiste como string para respeitar o CHECK ('NVDI','PRECTOTCORR')
+        // Persiste como string para respeitar o CHECK ('NDVI','PRECTOTCORR')
         builder.Property(r => r.TipoParam)
             .HasColumnName("tipo_param")
             .HasMaxLength(15)

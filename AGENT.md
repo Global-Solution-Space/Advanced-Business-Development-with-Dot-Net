@@ -94,7 +94,7 @@ Resultado da verificacao do README atual:
 - A numeracao dos cURLs pula do bloco 5 para o 7 por causa da ausencia do bloco dedicado de `Telefone`; nao tratar isso como bug funcional se o usuario pediu somente as quatro entidades finais.
 - A tabela de endpoints do README ainda pode mostrar `/api/dadostemporal`, mas o controller e os cURLs atuais usam `/api/dadotemporal`. Se o pedido for corrigir README, trocar a tabela para `/api/dadotemporal`.
 - O exemplo de `TipoApiRequest` deve respeitar `[StringLength(10)]`; `NASA POWER` tem 10 caracteres incluindo o espaco e cabe no limite.
-- O comentario do README pode chamar `tipoParam: 0 = NVDI/SATVEG`; o enum real se chama `Nvdi = 0`. Preserve o valor numerico e, se ajustar texto, prefira `NDVI/SATVEG` para clareza de dominio.
+- O comentario do README pode chamar `tipoParam: 0 = NDVI/SATVEG`; o enum real se chama `Ndvi = 0`. Preserve o valor numerico e, se ajustar texto, prefira `NDVI/SATVEG` para clareza de dominio.
 
 ---
 
@@ -144,7 +144,7 @@ Enums relevantes:
 
 | Valor JSON | `TipoParamReqApi` | Uso |
 |---|---|---|
-| `0` | `Nvdi` | SATVeg / NDVI |
+| `0` | `Ndvi` | SATVeg / NDVI |
 | `1` | `Prectotcorr` | NASA POWER / chuva |
 
 | Valor JSON | `NivelAlerta` esperado | Uso comum |
@@ -220,7 +220,7 @@ Use esta secao quando revisar o projeto para producao Oracle. Nem todo item abai
 
 - `AlertaAgricola.Resolvido` esta protegido contra truncamento em `CHAR(1)`: `AlertaAgricolaConfiguration` converte `true/false` para `"1"`/`"0"`.
 - `AlertaAgricola.NivelAlerta` persiste como string em caixa alta com `ToUpperInvariant()` e parse case-insensitive.
-- `ReqApi.TipoParam` persiste como string em caixa alta com `ToUpperInvariant()`, respeitando o CHECK esperado (`NVDI`, `PRECTOTCORR`).
+- `ReqApi.TipoParam` persiste como string em caixa alta com `ToUpperInvariant()`, respeitando o CHECK esperado (`NDVI`, `PRECTOTCORR`).
 - `ReqApi -> DadoTemporal` esta mapeado com `DeleteBehavior.Cascade` em `ReqApiConfiguration`.
 - `Talhao -> DadoTemporal` e `Talhao -> AlertaAgricola` tambem estao com cascade em `TalhaoConfiguration`.
 - `ProdutorRequest.TelefoneContato` ja valida 10 a 11 digitos com `[RegularExpression]` antes do service extrair DDD e numero.
@@ -245,7 +245,7 @@ dotnet ef migrations script --idempotent --project .\TerraNova.Infrastructure --
 
 ### 11.3 Dividas Tecnicas Conhecidas
 
-- O enum `TipoParamReqApi` usa `Nvdi`, e o banco espera `NVDI`. Corrigir para `NDVI` exige roteiro completo: alterar codigo, criar migration, executar `UPDATE` dos registros legados, e recriar a CHECK constraint no Oracle.
+- O enum `TipoParamReqApi` usa `Ndvi`, e o banco espera `NDVI`. Corrigir para `NDVI` exige roteiro completo: alterar codigo, criar migration, executar `UPDATE` dos registros legados, e recriar a CHECK constraint no Oracle.
 - O fluxo de produtor ainda aceita `telefoneContato` como string unica por compatibilidade com o README/API atual. Uma melhoria opcional seria receber `ddd` e `numero` separados tambem nesse payload.
 
 ---

@@ -83,7 +83,7 @@ public sealed class ReqApiService(
  
         var dados = request.TipoParam switch
         {
-            TipoParamReqApi.Nvdi        => await BuscarDadosSatVeg(reqApi.Id, talhao),
+            TipoParamReqApi.Ndvi        => await BuscarDadosSatVeg(reqApi.Id, talhao),
             TipoParamReqApi.Prectotcorr => await BuscarDadosNasaPower(reqApi.Id, talhao),
             _                           => []
         };
@@ -91,7 +91,7 @@ public sealed class ReqApiService(
         if (dados.Count > 0)
         {
             dadoTemporalRepository.AddRange(dados);
-            var tipoApiNome = request.TipoParam == TipoParamReqApi.Nvdi ? "SATVEG" : "NASA POWER";
+            var tipoApiNome = request.TipoParam == TipoParamReqApi.Ndvi ? "SATVEG" : "NASA POWER";
             AnalisarEGerarAlertas(talhao.Id, dados, tipoApiNome);
         }
  
@@ -137,12 +137,12 @@ public sealed class ReqApiService(
 
             if (dados.Count == 0) return;
 
-            var ultimoNvdi = dados.First().Valor;
+            var ultimoNdvi = dados.First().Valor;
 
-            if (ultimoNvdi < 0.2m)
+            if (ultimoNdvi < 0.2m)
                 CriarAlertaSeNovo(talhaoId, NivelAlerta.Critico, "Anomalia Vegetativa Severa (SATVEG)",
                     "O NDVI atual caiu drasticamente. Possível falha na cultura ou solo exposto.");
-            else if (ultimoNvdi < 0.4m)
+            else if (ultimoNdvi < 0.4m)
                 CriarAlertaSeNovo(talhaoId, NivelAlerta.Medio, "Baixo Vigor Vegetativo (SATVEG)",
                     "O NDVI atual está baixo. Monitore para pragas, doenças ou estresse nutricional.");
         }

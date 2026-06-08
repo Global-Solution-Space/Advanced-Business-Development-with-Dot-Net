@@ -10,7 +10,7 @@ namespace TerraNova.Domain.Entities;
 /// </summary>
 public sealed class ReqApi : BaseEntity
 {
-    /// <summary>Parâmetro consultado: NVDI (SatVeg) ou PRECTOTCORR (NASA POWER).</summary>
+    /// <summary>Parâmetro consultado: NDVI (SatVeg) ou PRECTOTCORR (NASA POWER).</summary>
     public TipoParamReqApi TipoParam   { get; private set; }
  
     public DateTime        DataAnalise { get; private set; }
