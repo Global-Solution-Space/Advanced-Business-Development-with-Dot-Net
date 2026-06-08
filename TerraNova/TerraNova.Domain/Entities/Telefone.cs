@@ -19,17 +19,20 @@ public sealed class Telefone : BaseEntity
  
     public Telefone(string ddd, string numero, Guid produtorId)
     {
-        if (string.IsNullOrWhiteSpace(ddd) || ddd.Trim().Length != 2)
+        ddd = ddd.Trim();
+        numero = numero.Trim();
+
+        if (string.IsNullOrWhiteSpace(ddd) || ddd.Length != 2 || !ddd.All(char.IsDigit))
             throw new DomainException("O DDD deve ter exatamente 2 dígitos.");
  
-        if (string.IsNullOrWhiteSpace(numero) || numero.Trim().Length > 9)
-            throw new DomainException("O número deve ter no máximo 9 dígitos.");
+        if (string.IsNullOrWhiteSpace(numero) || numero.Length is < 8 or > 9 || !numero.All(char.IsDigit))
+            throw new DomainException("O número deve ter entre 8 e 9 dígitos.");
  
         if (produtorId == Guid.Empty)
             throw new DomainException("O telefone deve estar associado a um produtor válido.");
  
-        Ddd        = ddd.Trim();
-        Numero     = numero.Trim();
+        Ddd        = ddd;
+        Numero     = numero;
         ProdutorId = produtorId;
     }
  

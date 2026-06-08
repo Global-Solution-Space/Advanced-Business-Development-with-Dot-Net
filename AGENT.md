@@ -1,183 +1,206 @@
-# AGENT.md — Terra Nova API (.NET 10)
+# AGENT.md - Terra Nova API (.NET)
 
-> **Fonte da verdade.** Leia antes de tocar em qualquer arquivo. Portado do Java (Spring Boot) com paridade comportamental total.
+> Fonte da verdade para agentes trabalhando neste checkout. Antes de alterar codigo ou README, leia este arquivo e confirme a rota/DTO real no projeto.
 
 ---
 
-## 1. Arquitetura (Clean Architecture — 5 camadas)
+## 1. Contexto do Projeto
 
+- Projeto: **Terra Nova API** para a **Global Solution FIAP**.
+- Stack: .NET, ASP.NET Core, EF Core, Oracle, NetTopologySuite, Swagger.
+- Solucao: `TerraNova/TerraNova.sln`.
+- Arquitetura: Clean Architecture com camadas `Domain`, `Application`, `Infrastructure`, `Integration` e `API`.
+- Regra de documentacao: preservar o termo **Global Solution** e o vocabulario Terra Nova (`Produtor`, `Propriedade`, `Talhao`, `ReqApi`, `DadoTemporal`, `AlertaAgricola`).
+
+Fluxo base:
+
+```text
+Controller -> Service -> Repository -> Entity
 ```
-Controller → Service → Repository → Entity
-```
+
+---
+
+## 2. Estrutura das Camadas
 
 | Camada | Responsabilidade | Regra |
 |---|---|---|
-| `TerraNova.Domain` | Entidades ricas, Enums, DomainException | Sem dependências externas |
-| `TerraNova.Application` | Services, Interfaces, DTOs/Records | Orquestra; não conhece EF/HTTP |
-| `TerraNova.Infrastructure` | DbContext, Repositórios, Migrations | Só Oracle/EF Core |
-| `TerraNova.Integration` | HttpClients NASA POWER e SATVeg | Sem acesso ao banco |
-| `TerraNova.API` | Controllers, Program.cs, Swagger | Nunca expõe Entity — só DTO |
+| `TerraNova.Domain` | Entidades, enums e `DomainException` | Nao depende de EF, HTTP ou banco |
+| `TerraNova.Application` | DTOs, interfaces e services | Orquestra casos de uso |
+| `TerraNova.Infrastructure` | `TerraNovaContext`, repositories, configurations e migrations | Acesso Oracle/EF Core |
+| `TerraNova.Integration` | Clientes NASA POWER e SATVeg | HTTP externo, sem acesso ao banco |
+| `TerraNova.API` | Controllers, Swagger, DI e exception handler | Expor DTOs, nunca entities |
 
 ---
 
-## 2. Modelo de Dados
+## 3. Modelo de Dados
 
-Todas as entidades herdam de `BaseEntity` (→ `Id: Guid`). Banco: **Oracle**.
+Todas as entidades herdam de `BaseEntity` e usam `Guid Id`.
 
-| Entidade | Relacionamentos | Regra crítica |
+| Entidade | Dependencias / relacoes | Observacoes |
 |---|---|---|
-| `Produtor` | 1:N `Propriedade`, 1:1 `Telefone` | Email único; senha ≥ 6 chars |
-| `Telefone` | 1:1 `Produtor` | FK única por produtor; `DDD + Numero` bloqueado pela aplicação |
-| `Localizacao` | 1:1 com `Propriedade` ou `Talhao` | `Point` (NTS) → `SDO_GEOMETRY` SRID 4326; sem FK própria |
-| `Propriedade` | N:1 `Produtor`, 1:1 `Localizacao`, 1:N `Talhao` | Localização exclusiva (UNIQUE INDEX) |
-| `Talhao` | N:1 `Propriedade`, 1:1 `Localizacao`, N:1 `TipoPlantacao` | `SUM(VolumArea) ≤ Propriedade.TamanhoTotal` |
-| `TipoPlantacao` | 1:N `Talhao` | LookUp (soja, milho…) |
-| `TipoApi` | 1:N `ReqApi` | LookUp (NASAPOWER, SATVEG) |
-| `ReqApi` | **Sem FK para Talhao** — ligado via DadoTemporal | Cabeçalho da requisição |
-| `DadoTemporal` | N:1 `Talhao`, N:1 `ReqApi` | Série temporal; tabela de interseção |
-| `AlertaAgricola` | N:1 `Talhao` | `Resolver()` / `Reabrir()` — métodos ricos |
+| `TipoPlantacao` | Nenhuma | Tabela raiz para culturas |
+| `Localizacao` | Nenhuma | Usa `Point`/SDO_GEOMETRY com SRID 4326 |
+| `Produtor` | Pode criar/atualizar `Telefone` principal via `telefoneContato` | Email unico; senha minima |
+| `Telefone` | Depende de `Produtor` | Um telefone por produtor; `DDD + Numero` unico |
+| `Propriedade` | Depende de `Produtor` + `Localizacao` | `Localizacao` exclusiva |
+| `Talhao` | Depende de `TipoPlantacao` + `Propriedade` + `Localizacao` | Area total dos talhoes nao pode passar da propriedade |
+| `TipoApi` | Nenhuma | Tabela raiz para APIs externas, ex.: `NASAPOWER`, `SATVEG` |
+| `ReqApi` | Depende de `TipoApi`; ligado ao talhao pelos dados gerados | Cabecalho da integracao externa |
+| `DadoTemporal` | Depende de `Talhao` + `ReqApi` | Read-only pela API; criado pelo fluxo de integracao |
+| `AlertaAgricola` | Depende de `Talhao` | Manual ou automatico; possui resolver/reabrir |
 
-**Cascade Delete:** `Talhao` deleta → `DadoTemporal` + `AlertaAgricola` cascadeiam.
-**Restrict Delete:** `Localizacao`, `TipoPlantacao` bloqueiam deleção se em uso.
-
----
-
-## 3. Repositórios Especializados
-
-Além do genérico `IRepository<T>` (CRUD + `ExistsById` + `ExistsByNome`):
-
-| Interface | Métodos extras |
-|---|---|
-| `IProdutorRepository` | `GetByEmail`, `ExistsByEmail` |
-| `IPropriedadeRepository` | `GetByProdutorId` (SQL WHERE), `ExistsByLocalizacaoId` (COUNT > 0) |
-| `ITalhaoRepository` | `GetByPropriedadeId`, `GetByTipoPlantacaoId`, `GetByIdWithLocalizacao`, `SomarAreaPorPropriedade`, `ExistsByLocalizacaoId` |
-| `IAlertaAgricolaRepository` | `GetByTalhaoId`, `GetByNivelAlerta`, `GetNaoResolvidos`, `ExisteAlertaAtivo` |
-| `IReqApiRepository` | `GetByTalhaoId` (EXISTS via `.Any()`), `CountDadosByReqApiId`, `CountDadosByReqApiIds` (batch GROUP BY) |
-| `IDadoTemporalRepository` | `GetByTalhaoId`, `GetByReqApiId`, `GetByTalhaoAndReqApi`, `AddRange` |
-
-> **`GetByTalhaoId` em ReqApi:** `ReqApi` não tem FK para `Talhao`. A query usa EXISTS implícito:
-> ```csharp
-> Context.ReqApis.AsNoTracking()
->     .Where(r => r.DadosTemporais.Any(d => d.TalhaoId == talhaoId))
->     .ToList();
-> ```
+Cascade importante: remover `Talhao` remove `DadoTemporal` e `AlertaAgricola` associados; remover `ReqApi` tambem remove os `DadoTemporal` associados a essa requisicao.
 
 ---
 
-## 4. Leis de Performance — OBRIGATÓRIO
+## 4. Endpoints Reais
 
-> Violações serão detectadas em code review. Não negocie.
+Os controllers usam `[Route("api/[controller]")]`. O ASP.NET aceita variacao de caixa, mas o README deve preferir rotas em minusculo.
 
-### 4.1 AsNoTracking em todo GET
-```csharp
-_set.AsNoTracking().OrderBy(e => e.Id).ToList(); // ✅
-_set.OrderBy(e => e.Id).ToList();                // ❌
-```
-
-### 4.2 Zero GetAll() em filtros — use SQL WHERE
-```csharp
-// ✅ SQL WHERE no Oracle:
-Context.Propriedades.AsNoTracking().Where(p => p.ProdutorId == id).ToList();
-// ❌ Carrega tudo em RAM:
-GetAll().Where(p => p.ProdutorId == id).ToList();
-```
-
-### 4.3 Count() > 0 em vez de Any() — Oracle não aceita boolean literal
-```csharp
-_set.Count(e => e.Id == id) > 0  // ✅ — evita ORA-00904
-_set.Any(e => e.Id == id)        // ❌ — ORA-00904: "FALSE": identificador inválido
-```
-> Aplica-se a: `ExistsById`, `ExistsByEmail`, `ExistsByLocalizacaoId`, `ExistsByNome`, `ExisteAlertaAtivo`.
-
-### 4.4 Agregações no banco — não em memória
-```csharp
-// ✅ GROUP BY + COUNT no Oracle (batch):
-var counts = reqApiRepository.CountDadosByReqApiIds(ids);
-// ✅ SUM no Oracle:
-Context.Talhoes.AsNoTracking().Where(t => t.PropriedadeId == id).Sum(t => t.VolumArea);
-// ❌ Include() + Count em memória:
-propriedade.Talhoes.Count
-```
-
-### 4.5 Async/Await ponta a ponta — proibido Sync-over-Async
-```csharp
-var dados = await nasaPowerClient.GetDailyDataAsync(...); // ✅
-nasaPowerClient.GetDailyDataAsync(...).GetAwaiter().GetResult(); // ❌ thread starvation
-```
-
-### 4.6 CultureInfo.InvariantCulture em coordenadas
-```csharp
-// ✅ Sempre ponto decimal (NASA POWER rejeita vírgula com HTTP 422):
-var lat = coordenadas.Y.ToString("0.0000", CultureInfo.InvariantCulture);
-// ❌ pt-BR gera "-23,3849":
-var lat = $"{coordenadas.Y}";
-```
-
----
-
-## 5. Fluxo de Integração (ReqApiService.CreateAsync)
-
-```
-POST /api/reqapi
-  → valida TipoApi e Talhao
-  → cria ReqApi (SaveChanges)
-  → switch(TipoParam):
-      0 (NDVI)        → BuscarDadosSatVeg()
-      1 (PRECTOTCORR) → BuscarDadosNasaPower()
-  → dadoTemporalRepository.AddRange(dados)  ← SaveChanges aqui
-  → AnalisarEGerarAlertas(talhaoId, dados, "NASA POWER"|"SATVEG")
-      ↳ dados passados EM MEMÓRIA — não re-consulta o banco
-  → retorna ReqApiResponse com totalDadosSalvos
-```
-
-**Filtros de dados externos:**
-
-| API | Filtro | Normalização |
-|---|---|---|
-| NASA POWER | Ignorar `valor <= -900.0` | `YYYYMMDD` → `YYYY-MM-DD` |
-| SATVeg | Ignorar datas `< "2020-01-01"` | HTTP 400 (oceano) → `InvalidOperationException` |
-
-**Thresholds de Alerta Automático:**
-
-| API | Condição | Nível | Título no banco |
+| Entidade | Endpoint base no README | Escrita? | Extras |
 |---|---|---|---|
-| NASA POWER | Chuva 3 dias > 80mm | Alto | Risco de Alagamento (NASA) |
-| NASA POWER | Chuva 15 dias < 10mm | Crítico | Seca Severa (NASA) |
-| NASA POWER | Chuva 15 dias < 25mm | Médio | Estresse Hídrico (NASA) |
-| SATVeg | NDVI < 0.2 | Crítico | Anomalia Vegetativa Severa (SATVEG) |
-| SATVeg | NDVI < 0.4 | Médio | Baixo Vigor Vegetativo (SATVEG) |
+| `TipoPlantacao` | `/api/tipoplantacao` | CRUD completo | - |
+| `Localizacao` | `/api/localizacao` | CRUD completo | - |
+| `Produtor` | `/api/produtor` | CRUD completo | `GET /by-email?email=` |
+| `Telefone` | `/api/telefone` | CRUD completo | `GET /by-produtor/{produtorId}` |
+| `Propriedade` | `/api/propriedade` | CRUD completo | `GET /by-produtor/{produtorId}` |
+| `Talhao` | `/api/talhao` | CRUD completo | `GET /by-propriedade/{propriedadeId}`, `GET /by-tipo-plantacao/{tipoPlantacaoId}` |
+| `TipoApi` | `/api/tipoapi` | CRUD completo | - |
+| `ReqApi` | `/api/reqapi` | `GET`, `POST`, `DELETE`; sem `PUT` | `GET /talhao/{talhaoId}` |
+| `DadoTemporal` | `/api/dadotemporal` | Somente leitura | `GET /talhao/{talhaoId}`, `GET /req-api/{reqApiId}` |
+| `AlertaAgricola` | `/api/alertaagricola` | CRUD + ciclo de vida | `GET /talhao/{talhaoId}`, `PATCH /{id}/resolver`, `PATCH /{id}/reabrir` |
 
-> **Deduplicação:** `ExisteAlertaAtivo(talhaoId, titulo)` — não cria alerta duplicado se já existir ativo com o mesmo título.
-> **Sem alerta ≠ bug:** Regiões saudáveis não geram alertas. Use coordenadas de região seca/semi-árida para forçar.
+Atencao: se o README tiver `/api/dadostemporal`, conferir o controller antes de manter. O controller atual e `DadoTemporalController`, portanto a rota base natural e `/api/dadotemporal`.
 
-**SATVeg token** (`appsettings.json`, com fallback hardcoded em `ReqApiService`):
-```json
-{ "SatVegApiToken": "Bearer e97dab05-eedc-39b9-a3fd-fa83cb5fef5e" }
+---
+
+## 5. Verificacao Contra o README Atual
+
+Quando o usuario pedir para conferir o projeto "de acordo com o README", validar estes pontos antes de afirmar que esta consistente:
+
+1. Ler `README.md`, principalmente "Documentacao de Rotas" e "Comandos CRUD".
+2. Comparar rotas com `TerraNova/TerraNova.API/Controllers/*Controller.cs`.
+3. Comparar payloads com `TerraNova/TerraNova.Application/DTOs/*Request.cs`.
+4. Comparar valores numericos de enum com `TerraNova/TerraNova.Domain/Enums`.
+5. Conferir se exemplos que usam `jq` capturam `.id // .Id`.
+6. Conferir a ordem de criacao por FK e a ordem inversa nos deletes.
+
+Resultado da verificacao do README atual:
+
+- Os blocos novos de `TipoApi`, `ReqApi`, `AlertaAgricola` e `DadoTemporal` batem com os controllers quanto a superficie principal.
+- `ReqApi` esta correto sem `PUT`.
+- `DadoTemporal` esta correto como somente leitura nos cURLs.
+- O README atual nao tem bloco cURL dedicado para `Telefone`; isso e aceitavel porque o fluxo de `Produtor` ja cria/atualiza o telefone principal via `telefoneContato`, e a tabela de endpoints documenta `/api/telefone`.
+- A numeracao dos cURLs pula do bloco 5 para o 7 por causa da ausencia do bloco dedicado de `Telefone`; nao tratar isso como bug funcional se o usuario pediu somente as quatro entidades finais.
+- A tabela de endpoints do README ainda pode mostrar `/api/dadostemporal`, mas o controller e os cURLs atuais usam `/api/dadotemporal`. Se o pedido for corrigir README, trocar a tabela para `/api/dadotemporal`.
+- O exemplo de `TipoApiRequest` deve respeitar `[StringLength(10)]`; `NASA POWER` tem 10 caracteres incluindo o espaco e cabe no limite.
+- O comentario do README pode chamar `tipoParam: 0 = NVDI/SATVEG`; o enum real se chama `Nvdi = 0`. Preserve o valor numerico e, se ajustar texto, prefira `NDVI/SATVEG` para clareza de dominio.
+
+---
+
+## 6. Ordem dos cURLs no README
+
+Quando atualizar a secao de comandos CRUD do `README.md`, manter a ordem por dependencias:
+
+1. `TipoPlantacao` - sem dependencia.
+2. `Localizacao` - sem dependencia.
+3. `Produtor` - cria produtor e telefone principal pelo `telefoneContato`.
+4. `Propriedade` - depende de `Produtor` + `Localizacao`.
+5. `Talhao` - depende de `TipoPlantacao` + `Propriedade` + `Localizacao`.
+6. `Telefone` - depende de `Produtor`; endpoint existe, mas no README atual nao ha bloco cURL dedicado porque o produtor cobre o telefone principal.
+7. `TipoApi` - sem dependencia.
+8. `ReqApi` - depende de `TipoApi` + `Talhao`; dispara integracao externa.
+9. `AlertaAgricola` - depende de `Talhao`.
+10. `DadoTemporal` - depende de `Talhao` + `ReqApi`; somente leitura, validar dados gerados pela integracao.
+11. Deletes - sempre apagar dependentes antes das tabelas raiz.
+
+Para o README, os quatro blocos que costumam faltar sao:
+
+- `TipoApi`: `POST`, `GET all`, `GET by id`, `PUT`, `DELETE`.
+- `ReqApi`: `POST`, `GET all`, `GET by id`, `GET talhao`, `DELETE`; nao documentar `PUT`.
+- `AlertaAgricola`: `POST`, `GET all`, `GET by id`, `GET talhao`, `PUT`, `PATCH resolver`, `PATCH reabrir`, `DELETE`.
+- `DadoTemporal`: `GET all`, `GET by id`, `GET talhao`, `GET req-api`; nao documentar `POST`, `PUT` ou `DELETE`.
+
+Use `jq` para capturar IDs em Bash:
+
+```bash
+ID=$(curl -fsS -X POST "$API_URL/api/recurso" \
+  -H "Content-Type: application/json" \
+  -d '{ "...": "..." }' | jq -r '.id // .Id')
 ```
 
 ---
 
-## 6. Camada de Validação
+## 7. DTOs e Payloads Importantes
 
-Validadores customizados em `Application/DTOs/Validators/`, injetam serviços via `ValidationContext.GetService`. Utilizam `IHttpContextAccessor` para detectar se a requisição é **create** (POST, sem `{id}` na rota) ou **update** (PUT, com `{id}` na rota), ajustando a verificação de unicidade automaticamente.
+| DTO | Campos |
+|---|---|
+| `TipoApiRequest` | `nomeTipoApi` (`string`, 2 a 10 chars) |
+| `ReqApiRequest` | `tipoParam`, `tipoApiId`, `talhaoId` |
+| `AlertaAgricolaRequest` | `titulo`, `descricao`, `nivelAlerta`, `talhaoId` |
+| `DadoTemporalResponse` | `id`, `dataLeitura`, `valor`, `talhaoId`, `reqApiId` |
 
-| Validador | Aplicado em | Comportamento |
+Enums relevantes:
+
+| Valor JSON | `TipoParamReqApi` | Uso |
 |---|---|---|
-| `[BrasilCoordenadas]` | `LocalizacaoRequest` | Chama `bigdatacloud.net`; bloqueia se `countryCode != "BR"`; fail-safe (aprova se API cair) |
-| `[UniqueEmail]` | `ProdutorRequest.Email` | Injeta `IProdutorRepository`; **CREATE:** rejeita se qualquer produtor já possuir o e-mail; **UPDATE:** ignora o próprio produtor (detecta via `{id}` na rota) |
-| `[UniqueTelefone]` | `ProdutorRequest.TelefoneContato`, `TelefoneRequest` (classe) | Checa `DDD + Numero`; **CREATE:** rejeita se qualquer telefone com o mesmo DDD+Número existir; **UPDATE:** ignora o próprio telefone (detecta via `{id}` na rota). No cadastro de produtor, separa `TelefoneContato` em DDD + número da string limpa. |
+| `0` | `Nvdi` | SATVeg / NDVI |
+| `1` | `Prectotcorr` | NASA POWER / chuva |
 
-> `IHttpContextAccessor` é registrado em `Program.cs` via `AddHttpContextAccessor()`.
-> `ProdutorRequest` e `TelefoneRequest` são reutilizados para **create** e **update** — não existem DTOs separados para update.
-> `LocalizacaoRequest.ToDomain()` → `Coordinate(longitude, latitude)` — ordem X=lon, Y=lat (WKT padrão).
+| Valor JSON | `NivelAlerta` esperado | Uso comum |
+|---|---|---|
+| `0` | Baixo | Baixa severidade |
+| `1` | Medio | Monitoramento |
+| `2` | Alto | Risco elevado |
+| `3` | Critico | Risco critico |
+
+Sempre confirmar os nomes exatos nos enums antes de alterar payloads, porque os exemplos do README dependem do binding do ASP.NET.
 
 ---
 
-## 7. Tratamento de Exceções Global
+## 8. Regras de Implementacao
 
-`GlobalExceptionHandler.cs` implementa `IExceptionHandler` (registrado no `Program.cs`). Controllers **não** devem ter `try/catch` para regras de negócio.
+- Nao criar DTO de update separado se o projeto ja reutiliza o request atual.
+- Reusar os metodos ricos das entidades, como `Atualizar(...)`, `Resolver()` e `Reabrir()`, quando existirem.
+- Em GETs, preferir `AsNoTracking()`.
+- Filtros devem ir para repository especializado. Nao usar `GetAll().Where(...)` em memoria.
+- Para existencia no Oracle, preferir `Count(...) > 0` quando o padrao local ja usa isso para evitar problemas de boolean literal.
+- Integracoes externas devem continuar `async/await` ponta a ponta.
+- Coordenadas para NASA POWER devem usar `CultureInfo.InvariantCulture`.
+- Controllers nao devem ter `try/catch` de regra de negocio; o projeto usa `GlobalExceptionHandler`.
 
-| Exceção | HTTP |
+---
+
+## 9. Fluxo de Integracao `ReqApi`
+
+`POST /api/reqapi`:
+
+1. Valida `TipoApiId`.
+2. Busca `Talhao` com `Localizacao`.
+3. Cria `ReqApi`.
+4. Dispara SATVeg quando `tipoParam = 0`.
+5. Dispara NASA POWER quando `tipoParam = 1`.
+6. Persiste `DadoTemporal` em lote.
+7. Gera alertas automaticos sem reconsultar o banco.
+8. Retorna `ReqApiResponse` com contagem de dados salvos.
+
+SATVeg usa `SatVegApiToken` em `appsettings.json`, com fallback no service. NASA POWER usa latitude/longitude do talhao.
+
+---
+
+## 10. Validacao e Excecoes
+
+Validadores customizados ficam em `TerraNova.Application/DTOs/Validators`.
+
+| Validador | Uso |
+|---|---|
+| `BrasilCoordenadasAttribute` | `LocalizacaoRequest` |
+| `UniqueEmailAttribute` | `ProdutorRequest.Email` |
+| `UniqueTelefoneAttribute` | `ProdutorRequest.TelefoneContato` e `TelefoneRequest` |
+
+`GlobalExceptionHandler` converte:
+
+| Excecao | HTTP |
 |---|---|
 | `DomainException` | 400 |
 | `InvalidOperationException` | 400 |
@@ -185,315 +208,82 @@ Validadores customizados em `Application/DTOs/Validators/`, injetam serviços vi
 | `KeyNotFoundException` | 404 |
 | `UnauthorizedAccessException` | 401 |
 | `OracleException` | 502 |
-| Qualquer outra | 500 (stack trace em Development) |
+| Demais excecoes | 500 |
 
 ---
 
-## 8. Controllers (CRUD completo em todas)
+## 11. Auditoria Oracle de Alta Prioridade
 
-| Controller | Endpoints extras de negócio |
-|---|---|
-| `ProdutorController` | `GET by-email` |
-| `PropriedadeController` | `GET by-produtor/{id}` |
-| `TalhaoController` | `GET by-propriedade/{id}`, `GET by-tipo-plantacao/{id}` |
-| `TelefoneController` | `GET by-produtor/{id}` |
-| `LocalizacaoController` | — |
-| `TipoPlantacaoController` | — |
-| `TipoApiController` | — |
-| `ReqApiController` | `GET talhao/{id}`, `POST` async (integração) |
-| `DadoTemporalController` | `GET talhao/{id}`, `GET req-api/{id}` |
-| `AlertaAgricolaController` | `GET talhao/{id}`, `PATCH /{id}/resolver`, `PATCH /{id}/reabrir` |
+Use esta secao quando revisar o projeto para producao Oracle. Nem todo item abaixo e bug de codigo; alguns sao conferencias obrigatorias entre EF Core, migration gerada e DDL realmente aplicado no banco.
 
----
+### 11.1 Mitigacoes Confirmadas no Codigo
 
-## 9. Banco de Dados e Migrations
+- `AlertaAgricola.Resolvido` esta protegido contra truncamento em `CHAR(1)`: `AlertaAgricolaConfiguration` converte `true/false` para `"1"`/`"0"`.
+- `AlertaAgricola.NivelAlerta` persiste como string em caixa alta com `ToUpperInvariant()` e parse case-insensitive.
+- `ReqApi.TipoParam` persiste como string em caixa alta com `ToUpperInvariant()`, respeitando o CHECK esperado (`NVDI`, `PRECTOTCORR`).
+- `ReqApi -> DadoTemporal` esta mapeado com `DeleteBehavior.Cascade` em `ReqApiConfiguration`.
+- `Talhao -> DadoTemporal` e `Talhao -> AlertaAgricola` tambem estao com cascade em `TalhaoConfiguration`.
+- `ProdutorRequest.TelefoneContato` ja valida 10 a 11 digitos com `[RegularExpression]` antes do service extrair DDD e numero.
+- `TelefoneRequest` e a entidade `Telefone` exigem DDD e numero numericos, bloqueando padding silencioso em `NCHAR(2)`.
+- `ProdutorService.ExtrairTelefone` valida o tamanho normalizado antes de fatiar DDD e numero.
+- `AlertaAgricola.Atualizar(...)` centraliza validacao de titulo, descricao, nivel e talhao; o update preserva `Resolvido` e `DataAlerta`.
 
-- Banco Oracle FIAP — tabelas criadas e versionadas pelo EF Core Migrations.
-- Metadados espaciais (`USER_SDO_GEOM_METADATA`) e índice (`MDSYS.SPATIAL_INDEX_V2`) requerem privilégios DBA — criar manualmente.
-- `NetTopologySuite` com SRID 4326 (WGS 84) — configurado via `UseNetTopologySuite()` em `ServiceCollectionExtensions`.
+### 11.2 Itens que Devem Ser Auditados no Banco
+
+1. Gerar e revisar o script EF:
 
 ```powershell
-# Secrets (rodar dentro de TerraNova\TerraNova.API)
+dotnet ef migrations script --idempotent --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
+```
+
+2. Comparar o script com o DDL aplicado em producao, principalmente FKs com `ON DELETE CASCADE`.
+3. Confirmar que a FK `dado_temporal -> req_api` possui cascade no banco real. Se nao possuir, `DELETE /api/reqapi/{id}` pode falhar com `ORA-02292`.
+4. Confirmar se os scripts espaciais foram executados manualmente:
+   - `INSERT INTO USER_SDO_GEOM_METADATA` para a coluna espacial de `localizacao`.
+   - Criacao do indice espacial `MDSYS.SPATIAL_INDEX` / `MDSYS.SPATIAL_INDEX_V2`.
+5. Conferir se as constraints de enum no Oracle estao coerentes com as conversoes EF.
+
+### 11.3 Dividas Tecnicas Conhecidas
+
+- O enum `TipoParamReqApi` usa `Nvdi`, e o banco espera `NVDI`. Corrigir para `NDVI` exige roteiro completo: alterar codigo, criar migration, executar `UPDATE` dos registros legados, e recriar a CHECK constraint no Oracle.
+- O fluxo de produtor ainda aceita `telefoneContato` como string unica por compatibilidade com o README/API atual. Uma melhoria opcional seria receber `ddd` e `numero` separados tambem nesse payload.
+
+---
+
+## 12. Banco, Secrets e Execucao
+
+Rodar na raiz `TerraNova/` quando usar EF:
+
+```powershell
+dotnet ef database update --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
+dotnet ef database update 0 --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
+dotnet run --project .\TerraNova.API
+```
+
+Secrets locais:
+
+```powershell
+cd TerraNova\TerraNova.API
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:TerraNovaOracle" "User Id=RMxxxxxx;Password=xxxxxx;Data Source=oracle.fiap.com.br:1521/orcl;"
-
-# Migrations (rodar dentro de TerraNova\)
-dotnet ef migrations add Initial --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
-dotnet ef database update        --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
-dotnet ef database update 0      --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
-dotnet ef database drop --force  --project .\TerraNova.Infrastructure --startup-project .\TerraNova.API
-
-# Executar
-dotnet run --project .\TerraNova.API --urls http://localhost:5160
 ```
+
+Docker/Azure:
+
+- O README atual usa `docker compose up -d --build` e API em `http://localhost:8080`.
+- Substituir por `$PUBLIC_IP:8080` quando rodar na VM Azure.
+- Confirmar `azure-cli-script.sh` antes de documentar qualquer passo de deploy.
 
 ---
 
-## 10. TL;DR — Checklist para Novos Códigos
+## 13. Checklist Antes de Finalizar
 
-1. **Nova tabela?** → `Entity` + `Configuration.cs` + DTO + Controller.
-2. **Novo filtro/query?** → Método no repositório especializado. **Nunca** `GetAll().Where(...)`.
-3. **Verificar existência?** → `Count(...) > 0` — jamais `.Any()` em query LINQ (ORA-00904).
-4. **Regra de negócio?** → `InvalidOperationException` no Service → GlobalExceptionHandler → 400.
-5. **Integração HTTP?** → `async/await` ponta a ponta + `CultureInfo.InvariantCulture` em coordenadas.
-6. **DTO com validação especial?** → `ValidationAttribute` em `Application/DTOs/Validators/`.
-7. **Existência por campo único?** → Repositório especializado com `Count(x => x.Campo == valor) > 0`.
-
----
-
-## 11. Histórico de Bugs Corrigidos
-
-### 11.1 — Cultura pt-BR: Coordenadas com Vírgula (NASA POWER)
-**Sintoma:** HTTP 422 da NASA. **Causa:** `$"{latitude}"` em pt-BR gera `"-23,3849"`.
-**Fix:** `ToString("0.0000", CultureInfo.InvariantCulture)` antes de montar a URL.
-
-### 11.2 — Alertas não Gerados (dados fora do Change Tracker)
-**Sintoma:** `totalDadosSalvos: 2348` mas 0 alertas criados. **Causa:** `AnalisarEGerarAlertas` re-consultava o banco antes do `SaveChanges` → retornava 0 registros.
-**Fix:** Passar `List<DadoTemporal> dados` diretamente como parâmetro; não re-consultar o banco.
-
-### 11.3 — PropriedadeService: N+1 em GetByProdutorId e Create (2026-06-07)
-**Causa A:** `GetByProdutorId` usava `GetAll().Where(...)` — carregava tudo em RAM.
-**Causa B:** `Create` usava `GetAll().Any(p => p.LocalizacaoId == ...)` — mesma violação.
-
-**Fix:**
-```csharp
-// GetByProdutorId — SQL WHERE direto no Oracle
-Context.Propriedades.AsNoTracking()
-    .Where(p => p.ProdutorId == id).OrderBy(p => p.Nome).ToList();
-
-// ExistsByLocalizacaoId — COUNT no banco
-Context.Propriedades.AsNoTracking().Count(p => p.LocalizacaoId == id) > 0;
-```
-
-**Arquivos criados/modificados:**
-- `Application/Repositories/IPropriedadeRepository.cs` ← **NOVO**
-- `Infrastructure/Persistence/Repositories/PropriedadeRepository.cs` ← **NOVO**
-- `Application/Services/Implementations/PropriedadeService.cs` ← atualizado
-- `API/Extensions/ServiceCollectionExtensions.cs` ← `IPropriedadeRepository` registrado
-
----
-
-## 12. Testes via PowerShell (legado)
-
-> **Não usar este bloco como fonte atual.** Ele foi mantido apenas como histórico; use o script automático da seção 12.1.
-
-```powershell
-$base = "http://localhost:5160/api"
-
-# ── Setup (execute em ordem, guarde os IDs) ──────────────────────────────────
-Invoke-RestMethod "$base/Produtor"      -Method Post -ContentType "application/json" `
-  -Body '{"nome":"Joao Silva","email":"joao@terranova.com","senha":"123456","telefoneContato":"11999999999"}'
-
-Invoke-RestMethod "$base/Localizacao"   -Method Post -ContentType "application/json" `
-  -Body '{"latitude":-12.9714,"longitude":-38.5014}'   # Salvador-BA — região seca (força alertas)
-
-Invoke-RestMethod "$base/TipoPlantacao" -Method Post -ContentType "application/json" -Body '{"tipoPlant":"Soja"}'
-Invoke-RestMethod "$base/TipoApi"       -Method Post -ContentType "application/json" -Body '{"nomeTipoApi":"NASAPOWER"}'
-Invoke-RestMethod "$base/TipoApi"       -Method Post -ContentType "application/json" -Body '{"nomeTipoApi":"SATVEG"}'
-
-Invoke-RestMethod "$base/Propriedade"   -Method Post -ContentType "application/json" `
-  -Body '{"nome":"Fazenda","tamanhoTotal":100,"produtorId":"<id>","localizacaoId":"<id>"}'
-
-Invoke-RestMethod "$base/Talhao"        -Method Post -ContentType "application/json" `
-  -Body '{"nomeTalhao":"Talhao 1","volumArea":50,"tipoPlantacaoId":"<id>","propriedadeId":"<id>","localizacaoId":"<id>"}'
-
-# ── Integração ────────────────────────────────────────────────────────────────
-# tipoParam: 0 = NDVI (SATVeg) | 1 = PRECTOTCORR (NASA POWER)
-Invoke-RestMethod "$base/ReqApi" -Method Post -ContentType "application/json" `
-  -Body '{"tipoParam":1,"tipoApiId":"<tipoApiNASAId>","talhaoId":"<talhaoId>"}'
-Invoke-RestMethod "$base/ReqApi" -Method Post -ContentType "application/json" `
-  -Body '{"tipoParam":0,"tipoApiId":"<tipoApiSATVEGId>","talhaoId":"<talhaoId>"}'
-
-# ── Verificar resultados ──────────────────────────────────────────────────────
-Invoke-RestMethod "$base/AlertaAgricola/talhao/<talhaoId>" -Method Get
-Invoke-RestMethod "$base/DadoTemporal/talhao/<talhaoId>"   -Method Get
-Invoke-RestMethod "$base/ReqApi/talhao/<talhaoId>"         -Method Get
-
-# ── Update (PUT) ──────────────────────────────────────────────────────────────
-Invoke-RestMethod "$base/Produtor/<id>" -Method Put -ContentType "application/json" `
-  -Body '{"nome":"Joao Atualizado","email":"joao@terranova.com","senha":"123456","telefoneContato":"11999999999"}'
-
-Invoke-RestMethod "$base/Telefone/<id>" -Method Put -ContentType "application/json" `
-  -Body '{"ddd":"11","numero":"988887777","produtorId":"<id>"}'
-
-# ── Ciclo de vida do Alerta ───────────────────────────────────────────────────
-Invoke-RestMethod "$base/AlertaAgricola/<alertaId>/resolver" -Method Patch
-Invoke-RestMethod "$base/AlertaAgricola/<alertaId>/reabrir"  -Method Patch
-
-# ── Validações (devem retornar 400) ──────────────────────────────────────────
-Invoke-RestMethod "$base/Produtor" -Method Post -ContentType "application/json" `
-  -Body '{"nome":"Dup","email":"joao@terranova.com","senha":"123456","telefoneContato":"11888888888"}'
-
-Invoke-RestMethod "$base/Talhao"   -Method Post -ContentType "application/json" `
-  -Body '{"nomeTalhao":"Grande","volumArea":200,"tipoPlantacaoId":"<id>","propriedadeId":"<id>","localizacaoId":"<id>"}'
-```
-
-### 12.1 Script automático atual
-
-> Execute a API antes: `dotnet run --project .\TerraNova.API`
-
-```powershell
-$base = "http://localhost:5160/api"
-$runId = (Get-Date -Format "yyyyMMddHHmmss")
-
-function Invoke-ApiJson {
-  param(
-    [Parameter(Mandatory=$true)][string]$Uri,
-    [Parameter(Mandatory=$true)][string]$Method,
-    [object]$Body = $null
-  )
-
-  $json = if ($null -ne $Body) { $Body | ConvertTo-Json -Depth 8 } else { $null }
-  Invoke-RestMethod $Uri -Method $Method -ContentType "application/json" -Body $json -ErrorAction Stop
-}
-
-function Expect-BadRequest {
-  param(
-    [Parameter(Mandatory=$true)][string]$Label,
-    [Parameter(Mandatory=$true)][scriptblock]$Action
-  )
-
-  try {
-    & $Action | Out-Null
-    throw "$Label deveria retornar 400, mas passou."
-  }
-  catch {
-    $statusCode = $_.Exception.Response.StatusCode.value__
-    if ($statusCode -ne 400) { throw }
-    Write-Host "OK 400 - $Label"
-  }
-}
-
-$produtor = Invoke-ApiJson "$base/Produtor" "Post" @{
-  nome = "Joao $runId"
-  email = "joao$runId@tn.com"
-  senha = "123456"
-  telefoneContato = "1199999$runId".Substring(0, 11)
-}
-
-$localizacaoPropriedade = Invoke-ApiJson "$base/Localizacao" "Post" @{
-  latitude = -12.9714
-  longitude = -38.5014
-}
-
-$localizacaoTalhao = Invoke-ApiJson "$base/Localizacao" "Post" @{
-  latitude = -12.9814
-  longitude = -38.5114
-}
-
-$localizacaoTalhaoInvalido = Invoke-ApiJson "$base/Localizacao" "Post" @{
-  latitude = -12.9914
-  longitude = -38.5214
-}
-
-$tipoPlantacao = Invoke-ApiJson "$base/TipoPlantacao" "Post" @{ tipoPlant = "Soja $runId" }
-$tipoApiNasa = Invoke-ApiJson "$base/TipoApi" "Post" @{ nomeTipoApi = "NASA$runId".Substring(0, 10) }
-$tipoApiSatveg = Invoke-ApiJson "$base/TipoApi" "Post" @{ nomeTipoApi = "SAT$runId" }
-
-$propriedade = Invoke-ApiJson "$base/Propriedade" "Post" @{
-  nome = "Fazenda $runId"
-  tamanhoTotal = 100
-  produtorId = $produtor.id
-  localizacaoId = $localizacaoPropriedade.id
-}
-
-$talhao = Invoke-ApiJson "$base/Talhao" "Post" @{
-  nomeTalhao = "Talhao $runId"
-  volumArea = 50
-  tipoPlantacaoId = $tipoPlantacao.id
-  propriedadeId = $propriedade.id
-  localizacaoId = $localizacaoTalhao.id
-}
-
-Invoke-RestMethod "$base/Produtor/$($produtor.id)" -Method Get
-Invoke-RestMethod "$base/Produtor/by-email?email=$($produtor.email)" -Method Get
-Invoke-RestMethod "$base/Telefone/by-produtor/$($produtor.id)" -Method Get
-Invoke-RestMethod "$base/Propriedade/by-produtor/$($produtor.id)" -Method Get
-Invoke-RestMethod "$base/Talhao/by-propriedade/$($propriedade.id)" -Method Get
-Invoke-RestMethod "$base/Talhao/by-tipo-plantacao/$($tipoPlantacao.id)" -Method Get
-
-# ── Update (PUT) ──────────────────────────────────────────────────────────────
-$produtorAtualizado = Invoke-ApiJson "$base/Produtor/$($produtor.id)" "Put" @{
-  nome = "Joao Atualizado $runId"
-  email = $produtor.email
-  senha = "123456"
-  telefoneContato = $produtor.telefoneContato
-}
-Write-Host "Produtor atualizado: $($produtorAtualizado.nome)"
-
-$telefoneDetalhado = Invoke-RestMethod "$base/Telefone/by-produtor/$($produtor.id)" -Method Get
-if ($null -ne $telefoneDetalhado) {
-  Invoke-ApiJson "$base/Telefone/$($telefoneDetalhado.id)" "Put" @{
-    ddd = $telefoneDetalhado.ddd
-    numero = "9$($runId.Substring(0,8))"
-    produtorId = $produtor.id
-  } | Out-Null
-  Write-Host "Telefone atualizado para: ($($telefoneDetalhado.ddd)) 9$($runId.Substring(0,8))"
-  $telefoneDetalhado = Invoke-RestMethod "$base/Telefone/by-produtor/$($produtor.id)" -Method Get -ErrorAction Stop
-}
-
-try {
-  $reqNasa = Invoke-ApiJson "$base/ReqApi" "Post" @{
-    tipoParam = 1
-    tipoApiId = $tipoApiNasa.id
-    talhaoId = $talhao.id
-  }
-  Invoke-RestMethod "$base/DadoTemporal/req-api/$($reqNasa.id)" -Method Get
-}
-catch {
-  Write-Warning "Integração NASA POWER não validada: $($_.Exception.Message)"
-}
-
-try {
-  $reqSatveg = Invoke-ApiJson "$base/ReqApi" "Post" @{
-    tipoParam = 0
-    tipoApiId = $tipoApiSatveg.id
-    talhaoId = $talhao.id
-  }
-  Invoke-RestMethod "$base/DadoTemporal/req-api/$($reqSatveg.id)" -Method Get
-}
-catch {
-  Write-Warning "Integração SATVeg não validada: $($_.Exception.Message)"
-}
-
-Invoke-RestMethod "$base/DadoTemporal/talhao/$($talhao.id)" -Method Get
-Invoke-RestMethod "$base/ReqApi/talhao/$($talhao.id)" -Method Get
-
-$alerta = Invoke-ApiJson "$base/AlertaAgricola" "Post" @{
-  titulo = "Alerta $runId"
-  descricao = "Teste manual do ciclo de vida"
-  nivelAlerta = 2
-  talhaoId = $talhao.id
-}
-Invoke-RestMethod "$base/AlertaAgricola/talhao/$($talhao.id)" -Method Get
-Invoke-RestMethod "$base/AlertaAgricola/$($alerta.id)/resolver" -Method Patch
-Invoke-RestMethod "$base/AlertaAgricola/$($alerta.id)/reabrir" -Method Patch
-
-Expect-BadRequest "e-mail duplicado" {
-  Invoke-ApiJson "$base/Produtor" "Post" @{
-    nome = "Dup Email"
-    email = $produtor.email
-    senha = "123456"
-    telefoneContato = "1188888$runId".Substring(0, 11)
-  }
-}
-
-Expect-BadRequest "telefone duplicado" {
-  Invoke-ApiJson "$base/Produtor" "Post" @{
-    nome = "Dup Tel"
-    email = "duptel$runId@tn.com"
-    senha = "123456"
-    telefoneContato = "$($telefoneDetalhado.ddd)$($telefoneDetalhado.numero)"
-  }
-}
-
-Expect-BadRequest "área de talhão maior que a propriedade" {
-  Invoke-ApiJson "$base/Talhao" "Post" @{
-    nomeTalhao = "Grande $runId"
-    volumArea = 200
-    tipoPlantacaoId = $tipoPlantacao.id
-    propriedadeId = $propriedade.id
-    localizacaoId = $localizacaoTalhaoInvalido.id
-  }
-}
-```
+1. Conferir `git status --short` e nao reverter mudancas do usuario.
+2. Conferir controller + DTO antes de escrever cURL.
+3. Manter rotas do README em minusculo.
+4. Nao documentar escrita para `DadoTemporal`.
+5. Nao documentar `PUT` para `ReqApi`.
+6. Se o README estiver sendo auditado, registrar divergencias entre README e projeto real, principalmente `/api/dadotemporal` versus `/api/dadostemporal`.
+7. Se for auditoria Oracle, verificar a secao "Auditoria Oracle de Alta Prioridade".
+8. Se mexer em codigo, tentar `dotnet build TerraNova/TerraNova.sln` quando o ambiente permitir.
+9. Se mexer so em docs, validar por leitura contra controllers/DTOs.

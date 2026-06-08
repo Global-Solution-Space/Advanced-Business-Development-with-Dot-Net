@@ -40,15 +40,15 @@ public sealed class AlertaAgricolaService(
 
     public AlertaAgricolaResponse Update(Guid id, AlertaAgricolaRequest request)
     {
-        _ = alertaRepository.GetById(id)
+        var alerta = alertaRepository.GetById(id)
             ?? throw new InvalidOperationException("Alerta agrícola não encontrado.");
 
         if (!talhaoRepository.ExistsById(request.TalhaoId))
             throw new InvalidOperationException("Talhão não encontrado.");
 
-        var entity = new AlertaAgricola(request.Titulo, request.Descricao, request.NivelAlerta, request.TalhaoId);
-        alertaRepository.Update(id, entity);
-        return AlertaAgricolaResponse.FromDomain(entity);
+        alerta.Atualizar(request.Titulo, request.Descricao, request.NivelAlerta, request.TalhaoId);
+        alertaRepository.Update(id, alerta);
+        return AlertaAgricolaResponse.FromDomain(alerta);
     }
 
     public AlertaAgricolaResponse Resolver(Guid id)

@@ -22,6 +22,13 @@ public sealed class AlertaAgricola : BaseEntity
  
     public AlertaAgricola(string titulo, string descricao, NivelAlerta nivelAlerta, Guid talhaoId)
     {
+        Atualizar(titulo, descricao, nivelAlerta, talhaoId);
+        Resolvido  = false;
+        DataAlerta = DateTime.UtcNow;
+    }
+
+    public void Atualizar(string titulo, string descricao, NivelAlerta nivelAlerta, Guid talhaoId)
+    {
         if (string.IsNullOrWhiteSpace(titulo))
             throw new DomainException("O título do alerta não pode ser vazio.");
  
@@ -44,8 +51,6 @@ public sealed class AlertaAgricola : BaseEntity
         Titulo      = titulo;
         Descricao   = descricao;
         NivelAlerta = nivelAlerta;
-        Resolvido   = false;
-        DataAlerta  = DateTime.UtcNow;
         TalhaoId    = talhaoId;
     }
  

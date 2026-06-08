@@ -87,8 +87,12 @@ public sealed class ProdutorService(
     private static (string Ddd, string Numero) ExtrairTelefone(string telefoneContato)
     {
         var telefoneLimpo = new string(telefoneContato.Where(char.IsDigit).ToArray());
-        var ddd = telefoneLimpo.Substring(0, 2);
-        var numero = telefoneLimpo.Substring(2);
+
+        if (telefoneLimpo.Length is not (10 or 11))
+            throw new InvalidOperationException("O telefone deve conter DDD e numero com 10 ou 11 digitos.");
+
+        var ddd = telefoneLimpo[..2];
+        var numero = telefoneLimpo[2..];
 
         return (ddd, numero);
     }
