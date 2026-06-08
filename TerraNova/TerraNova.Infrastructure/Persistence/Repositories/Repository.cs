@@ -16,7 +16,7 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
         _set.AsNoTracking().OrderBy(e => e.Id).ToList();
  
     public virtual T? GetById(Guid id) =>
-        _set.Find(id);
+        _set.AsNoTracking().FirstOrDefault(e => e.Id == id);
  
     public T Add(T entity)
     {
@@ -26,23 +26,22 @@ public class Repository<T>(TerraNovaContext context) : IRepository<T> where T : 
         return entity;
     }
  
-    public T Update(T entity)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-        _set.Update(entity);
-        Context.SaveChanges();
-        return entity;
-    }
- 
     public T Update(Guid id, T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-        var existing = _set.Find(id)
-            ?? throw new InvalidOperationException($"Entidade do tipo '{typeof(T).Name}' com Id {id} não encontrada.");
-        Context.Entry(existing).CurrentValues.SetValues(entity);
-        Context.Entry(existing).Property(e => e.Id).CurrentValue = id;
+
+        // Atribui o id da rota a entidade antes de qualquer operacao do EF Core
+        Context.Entry(entity).Property(e => e.Id).CurrentValue = id;
+
+        var entry = Context.Entry(entity);
+  
+        if (entry.State == EntityState.Detached)
+        {
+            _set.Update(entity);
+        }
+
         Context.SaveChanges();
-        return existing;
+        return entity;
     }
  
     public bool Delete(Guid id)

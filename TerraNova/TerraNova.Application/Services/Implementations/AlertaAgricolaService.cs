@@ -57,7 +57,7 @@ public sealed class AlertaAgricolaService(
                      ?? throw new InvalidOperationException("Alerta agrícola não encontrado.");
 
         alerta.Resolver();
-        alertaRepository.Update(alerta);
+        alertaRepository.Update(alerta.Id, alerta);
         return AlertaAgricolaResponse.FromDomain(alerta);
     }
 
@@ -67,7 +67,7 @@ public sealed class AlertaAgricolaService(
                      ?? throw new InvalidOperationException("Alerta agrícola não encontrado.");
 
         alerta.Reabrir();
-        alertaRepository.Update(alerta);
+        alertaRepository.Update(alerta.Id, alerta);
         return AlertaAgricolaResponse.FromDomain(alerta);
     }
 

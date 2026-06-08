@@ -45,8 +45,8 @@ public sealed class UniqueTelefoneAttribute : ValidationAttribute
 
         if (isUpdate)
         {
-            // UPDATE: ignora o próprio telefone ao verificar unicidade.
-            if (telefoneRepo.GetAll().Any(t => t.Ddd == ddd && t.Numero == numero && t.Id != currentId))
+            // UPDATE: ignora o telefone do proprio produtor (relacao 1:1).
+            if (telefoneRepo.GetAll().Any(t => t.Ddd == ddd && t.Numero == numero && t.ProdutorId != currentId))
                 return new ValidationResult("Este DDD e Número já estão cadastrados para outro telefone.");
         }
         else
