@@ -17,7 +17,7 @@
 
 ## Repositório Github | Apresentação em Vídeo
 
-[Repositório Github](https://github.com/Global-Solution-Space/Advanced-Business-Development-with-Dot-Net) | [Vídeo de Demonstração Completa](#) | [Vídeo Pitch](#)
+[Repositório Github](https://github.com/Global-Solution-Space/Advanced-Business-Development-with-Dot-Net) | [Vídeo de Demonstração Completa](https://www.youtube.com/watch?v=FaP5-0v5pG4) | [Vídeo Pitch](https://www.youtube.com/watch?v=-ik2puItyfQ)
 
 ---
 
