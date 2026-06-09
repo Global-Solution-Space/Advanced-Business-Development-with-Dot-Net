@@ -17,7 +17,7 @@
 
 ## Repositório Github | Apresentação em Vídeo
 
-[Repositório Github](https://github.com/Challenge-Terra-Nova/Advanced-Business-Development-with-Dot-Net) | [Vídeo de Demonstração (YouTube)](#)
+[Repositório Github](https://github.com/Global-Solution-Space/Advanced-Business-Development-with-Dot-Net) | [Vídeo de Demonstração Completa](#) | [Vídeo Pitch](#)
 
 ---
 
