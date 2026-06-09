@@ -23,7 +23,7 @@ public sealed class ReqApiService(
     ILogger<ReqApiService>       logger) : IReqApiService
 {
     private string SatVegToken =>
-        configuration["SatVegApiToken"] ?? "Bearer e97dab05-eedc-39b9-a3fd-fa83cb5fef5e";
+        configuration["SatVegApiToken"] ?? throw new InvalidOperationException("SatVegApiToken não configurado. Defina a variável de ambiente SatVegApiToken.");
  
     public IReadOnlyList<ReqApiResponse> GetAll()
     {

@@ -79,7 +79,7 @@
 ## 🏛️ Arquitetura e Boas Práticas
 
 ### Como o projeto está organizado?
-A aplicação segue os princípios da **Clean Architecture** (Arquitetura Limpa) e **Domain-Driven Design (DDD)**, dividida em quatro camadas principais:
+A aplicação segue os princípios da **Clean Architecture** (Arquitetura Limpa), dividida em quatro camadas principais:
 1. **TerraNova.Domain:** Contém as entidades centrais (`Produtor`, `Talhao`, `Localizacao`), validações de domínio (`DomainException`) e lógicas puras, sem dependência de tecnologia.
 2. **TerraNova.Application:** Orquestra os casos de uso. Contém DTOs (Data Transfer Objects), Contratos (Interfaces) de Serviços e Repositórios, blindando o domínio contra alterações na API.
 3. **TerraNova.Infrastructure:** Gerencia o acesso a dados (EF Core + Oracle). Implementa o padrão *Repository* e contém as Migrations do banco.
@@ -159,12 +159,15 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 
 ## 🚀 Como Executar o Projeto
 
-1. **Configuração de Secrets (Banco Oracle FIAP):**
+1. **Configuração de Secrets (Banco Oracle FIAP e SATveg):**
    No terminal, na raiz do projeto `TerraNova\TerraNova.API`, rode para armazenar suas credenciais com segurança:
    ```powershell
    cd TerraNova\TerraNova.API
    dotnet user-secrets init
    dotnet user-secrets set "ConnectionStrings:TerraNovaOracle" "User Id=RMxxxxxx;Password=xxxxxx;Data Source=oracle.fiap.com.br:1521/orcl;"
+
+   Crie o arquivo `.env` e informe o token do SatVeg:
+   "SATVEG_API_TOKEN=Bearer e97dab05-eedc-39b9-a3fd-fa83cb5fef5e"
    ```
 
 2. **Atualização do Banco de Dados (Gerar tabelas e schemas espaciais):**
@@ -350,7 +353,7 @@ Sistema de alertas reativos com **deduplicação automática**: não cria alerta
 
 # 🧪 Comandos CRUD
 
-Abaixo estão os comandos `curl` para exercitar a API após o `docker compose up -d --build` estar rodando. A API expõe os endpoints no prefixo `api/` e a interface interativa do Swagger está disponível em `http://localhost:8080`.
+Abaixo estão os comandos `curl` para exercitar a API após o `docker compose up -d --build` estar rodando. A API expõe os endpoints no prefixo `api/` e a interface interativa do Swagger está disponível em `http://20.116.17.249:8080/index.html`.
 
 > 🔁 **Ordem recomendada**: como as entidades possuem chaves estrangeiras entre si, cadastre primeiro as entidades que não precisam de IDs anteriores e vá avançando. Os exemplos abaixo usam `jq` para capturar o `id` retornado em cada `CREATE` e reutilizar esse valor automaticamente nos comandos seguintes.
 
@@ -359,7 +362,7 @@ Abaixo estão os comandos `curl` para exercitar a API após o `docker compose up
 > 🌍 Substitua `localhost:8080` pelo IP público da VM (`$PUBLIC_IP:8080`) caso esteja executando no Azure.
 
 ```bash
-API_URL="http://localhost:8080"
+API_URL="http://20.116.17.249:8080/"
 ```
 
 ## 1️⃣ Criar um Tipo de Plantação (sem ID anterior)
