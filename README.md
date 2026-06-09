@@ -175,7 +175,7 @@ O teste final pode ser realizado rodando a API e acessando o `http://localhost:5
    dotnet user-secrets init
    dotnet user-secrets set "ConnectionStrings:TerraNovaOracle" "User Id=RMxxxxxx;Password=xxxxxx;Data Source=oracle.fiap.com.br:1521/orcl;"
 
-   Crie o arquivo `.env` e informe o token do SatVeg:
+   Token do SatVeg:
    "SATVEG_API_TOKEN=Bearer e97dab05-eedc-39b9-a3fd-fa83cb5fef5e"
    ```
 
