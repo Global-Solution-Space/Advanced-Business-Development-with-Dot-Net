@@ -1,7 +1,9 @@
 using TerraNova.API.Exceptions;
 using TerraNova.API.Extensions;
 using TerraNova.API.Swagger;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using TerraNova.Infrastructure.Persistence;
 
 namespace TerraNova.API;
 
@@ -50,6 +52,13 @@ public class Program
         });
 
         var app = builder.Build();
+
+        // Aplica migrations automaticamente ao iniciar (útil no Docker)
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TerraNovaContext>();
+            db.Database.Migrate();
+        }
 
         app.UseExceptionHandler();
 

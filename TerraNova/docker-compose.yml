@@ -1,11 +1,11 @@
 #  TerraNova — Docker Compose
-#  Banco  : Oracle XE 21c  (gvenzl/oracle-xe:21-slim)
+#  Banco  : Oracle XE 21c  (gvenzl/oracle-xe:21)
 #  App    : TerraNova API (.NET 10  |  Oracle EF Core v10 compat)
 #  Rede   : terranova_net (bridge compartilhada)
 
 services:
   oracle-db:
-    image: gvenzl/oracle-xe:21-slim
+    image: gvenzl/oracle-xe:21
     container_name: oracle-db-rm561432
     restart: unless-stopped
     environment:
@@ -31,7 +31,7 @@ services:
       dockerfile: TerraNova.API/Dockerfile
       args:
         BUILD_CONFIGURATION: Release
-    image: SEU-DOCKERHUB/terranova-api:v1
+    image: enzookuizumi/terranova-api:v1
     container_name: terranova-api-rm561432
     depends_on:
       oracle-db:

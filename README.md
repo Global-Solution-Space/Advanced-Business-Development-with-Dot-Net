@@ -97,7 +97,9 @@ O fluxo de desenvolvimento de uma nova funcionalidade seria:
 4. **API:** Criar o novo *Controller*, injetar o serviço correspondente e expor as rotas via HTTP, configurando *status codes* (200, 201, 400).
 
 ### Padrões de Atualização de Domínio (DDD)
-Todas as entidades seguem o padrão **Entity-Behavior** do DDD: possuem um construtor blindado e um método público `Atualizar(...)` que reaproveita as mesmas validações. Os Services de aplicação **nunca instanciam uma nova entidade em um `Update`** — em vez disso, carregam a entidade existente via `repository.GetById(id)` e invocam `existing.Atualizar(...)`. Isso preserva o `Id`, o estado de tracking do EF Core e evita sobrescrita de campos de auditoria.
+A maioria das entidades segue o padrão **Entity-Behavior** do DDD: possuem um construtor blindado e um método público `Atualizar(...)` que reaproveita as mesmas validações. Entidades imutáveis no contexto de atualização — como `DadoTemporal` e `ReqApi` — não expõem `Atualizar()` porque são criadas uma única vez (via integração externa) e só podem ser removidas em cascata.
+
+Nos Services de aplicação, o fluxo padrão de `Update` é: carregar a entidade existente via `repository.GetById(id)` e invocar `existing.Atualizar(...)`. Isso preserva o `Id`, o estado de tracking do EF Core e evita sobrescrita de campos de auditoria. O `ProdutorService.Update` também segue este padrão para a entidade raiz (`Produtor`), com a distinção de atuar como **Aggregate Root** para o `Telefone`: devido ao ciclo de vida 1:1 atrelado, o serviço orquestra a criação de uma nova instância do telefone e a substitui via `existing.AtribuirTelefone()`, encapsulando a operação (insert ou update) dentro de uma transação atômica via `IUnitOfWork`.
 
 ### Transações Atômicas (Unit of Work)
 Quando um caso de uso altera **mais de uma entidade** na mesma operação (ex.: `ProdutorService.Create` e `ProdutorService.Update` persistem `Produtor` + `Telefone` simultaneamente), o `Service` envolve as chamadas de repositório em um bloco `IUnitOfWork.ExecuteInTransaction(...)`. Isso garante que todas as tabelas relacionadas sejam commitadas em uma única transação — se qualquer operação falhar, todas sofrem rollback, preservando a consistência do banco.
@@ -120,8 +122,15 @@ A modelagem foi concebida utilizando o **Entity Framework Core**, com a abordage
 
 ### Relacionamentos Implementados
 - **Produtor ↔ Propriedade (1:N):** Um produtor pode possuir várias propriedades, o que nos permite segmentar a visão de gestão agrícola.
+- **Produtor ↔ Telefone (1:1):** Cada produtor possui no máximo um telefone detalhado (DDD + número). A FK fica na tabela `Telefone` (`produtor_id_produtor`), garantindo unicidade via índice.
 - **Propriedade ↔ Localizacao / Talhao ↔ Localizacao (1:1):** O uso do vínculo `UNIQUE INDEX` na chave estrangeira de `Localizacao` possibilita que cada pedaço de terra e cada talhão de cultura tenham suas coordenadas espaciais georreferenciadas armazenadas isoladamente.
+- **Talhao ↔ Propriedade (N:1):** Cada talhão pertence a uma única propriedade, agrupando subdivisões de cultivo dentro de uma mesma fazenda.
+- **Talhao ↔ TipoPlantacao (N:1):** Cada talhão possui um tipo de plantação (ex.: Soja, Milho, Café), permitindo classificar e filtrar culturas por tipo.
 - **Talhao ↔ DadoTemporal (1:N):** As séries e dados vitais puxados de APIs (como precipitação e índice NDVI) são atrelados fortemente aos talhões para possibilitar gráficos de rendimento.
+- **Talhao ↔ AlertaAgricola (1:N):** Alertas agrícolas (automáticos ou manuais) são vinculados diretamente ao talhão que os originou, permitindo rastreamento por área de cultivo.
+- **Talhao ↔ ReqApi (1:N):** Um talhão recebe múltiplas solicitações históricas de coletas de telemetria de sensores e satélites externos ao longo do tempo.
+- **ReqApi ↔ TipoApi (N:1):** Cada requisição a uma API externa é classificada pelo tipo de API consultada (NASA POWER ou Embrapa SATVeg).
+- **ReqApi ↔ DadoTemporal (1:N):** Os dados temporais (séries históricas) são filhos diretos da requisição que os gerou, permitindo rastreabilidade de origem e remoção em cascata.
 
 ### O que acontece ao deletar um registro?
 Foi implementada a diretiva de deleção em cascata (`DeleteBehavior.Cascade`) para dados dependentes diretos. Por exemplo, ao deletar um `Talhao`, todos os seus respectivos `AlertaAgricola` e `DadoTemporal` são varridos automaticamente, garantindo que não haja registros órfãos no banco. Associações mais estruturais (como `Propriedade` e `Localizacao`) usam `Restrict` para impedir deleções acidentais na integridade do território.
@@ -153,7 +162,7 @@ O projeto utiliza um pipeline duplo de validação:
 
 ### Testes da API (Insomnia / Swagger)
 As rotas da API foram intensamente testadas. Graças à blindagem no DTO (`LocalizacaoRequest`), a nossa API recebe os campos JSON normais `latitude` e `longitude` enviados por clientes externos, e o nosso Mapper converte isso para um Ponto Geoespacial (`NetTopologySuite.Point`) transparente para o banco de dados, sem o consumidor (Frontend/Mobile) precisar saber WKT.
-O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado para realizar inserts nos endpoints.
+O teste final pode ser realizado rodando a API e acessando o `http://localhost:5160/index.html` gerado para realizar inserts nos endpoints.
 
 ---
 
@@ -179,7 +188,7 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
    ```powershell
    dotnet run --project .\TerraNova\TerraNova.API
    ```
-   Acesse a URL (ex: `http://localhost:5160/swagger`) fornecida no terminal para visualizar os endpoints ativos e testar a aplicação de ponta a ponta.
+   Acesse a URL (ex: `http://localhost:5160/index.html`) fornecida no terminal para visualizar os endpoints ativos e testar a aplicação de ponta a ponta.
 
 ---
 
@@ -218,7 +227,7 @@ O teste final pode ser realizado rodando a API e acessando o `/swagger` gerado p
 | PUT | `/api/talhao/{id}` | Atualizar talhão (nome, área, tipo de plantação, propriedade, localização) |
 | DELETE | `/api/talhao/{id}` | Remover um talhão |
 
-## Gestão Tipos de Plantação
+### Gestão Tipos de Plantação
 
 | Método     | Rota                      | Descrição                             |
 | --------- | ------------------------- | -------------------------------------- |
@@ -353,16 +362,18 @@ Sistema de alertas reativos com **deduplicação automática**: não cria alerta
 
 # 🧪 Comandos CRUD
 
-Abaixo estão os comandos `curl` para exercitar a API após o `docker compose up -d --build` estar rodando. A API expõe os endpoints no prefixo `api/` e a interface interativa do Swagger está disponível em `http://20.116.17.249:8080/index.html`.
+Abaixo estão os comandos `curl` para exercitar a API após o `docker compose up -d --build` estar rodando. A API expõe os endpoints no prefixo `api/` e a interface interativa do Swagger está disponível em `http://localhost:8080/index.html`.
 
 > 🔁 **Ordem recomendada**: como as entidades possuem chaves estrangeiras entre si, cadastre primeiro as entidades que não precisam de IDs anteriores e vá avançando. Os exemplos abaixo usam `jq` para capturar o `id` retornado em cada `CREATE` e reutilizar esse valor automaticamente nos comandos seguintes.
 
-> 🧰 **Pré-requisito para não digitar IDs manualmente**: execute os comandos em Bash, na mesma sessão de terminal, com `jq` instalado. Na VM Linux criada pelo `azure-cli-script.sh`, o `jq` já é instalado automaticamente; em uma VM Ubuntu manual, use `sudo apt-get update -y && sudo apt-get install -y jq`.
-
-> 🌍 Substitua `localhost:8080` pelo IP público da VM (`$PUBLIC_IP:8080`) caso esteja executando no Azure.
-
+> Caso esteja rodando localmente:
 ```bash
-API_URL="http://20.116.17.249:8080/"
+API_URL="http://localhost:5160/"
+```
+
+> Caso esteja rodando no Docker:
+```bash
+API_URL="http://localhost:8080/"
 ```
 
 ## 1️⃣ Criar um Tipo de Plantação (sem ID anterior)
@@ -578,7 +589,7 @@ curl -fsS -X PUT "$API_URL/api/tipoapi/$TIPO_API_ID" \
 
 ```bash
 # CREATE
-# tipoParam: 0 = NVDI/SATVEG, 1 = PRECTOTCORR/NASA POWER
+# tipoParam: 0 = NDVI/SATVEG, 1 = PRECTOTCORR/NASA POWER
 REQ_API_ID=$(curl -fsS -X POST "$API_URL/api/reqapi" \
   -H "Content-Type: application/json" \
   -d "$(jq -n \
@@ -698,4 +709,3 @@ curl -fsS -X DELETE "$API_URL/api/localizacao/$LOCALIZACAO_ID"
 
 # DELETE TIPO DE PLANTAÇÃO
 curl -fsS -X DELETE "$API_URL/api/tipoplantacao/$TIPO_PLANTACAO_ID"
-```
